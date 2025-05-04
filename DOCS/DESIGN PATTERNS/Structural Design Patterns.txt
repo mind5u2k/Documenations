@@ -1,0 +1,444 @@
+1) Adapter design pattern:
+--------------------------
+	The Adapter Design Pattern is a structural design pattern that bridges the gap between two incompatible interfaces, enabling them to work together. The main goal of this pattern is to convert the interface of one class into another interface that a client expects. It's commonly used in situations where legacy code or third-party libraries need to integrate seamlessly with existing systems.
+	
+Key Characteristics:
+	1) Interface Conversion: The adapter acts as a bridge to make two incompatible interfaces compatible.
+	2) Single Responsibility: Ensures that the adapter handles the task of translation without altering the behavior of existing classes.
+	3) Reusable: Existing code or libraries can be reused without modification.
+	4) Decoupling: Decouples the client from the specifics of the adaptee, adhering to the Dependency Inversion Principle.
+	
+Participants:
+	1) Client: The class expecting a specific interface to perform actions.
+	2) Target Interface: The interface the client expects.
+	3) Adaptee: The class or object whose functionality needs to be adapted.
+	4) Adapter: Implements the target interface and translates the client's requests to the adaptee.
+	
+Real-Life Analogy:
+	Imagine your laptop has a USB port, but you need to connect a memory card. The adapter here is a USB card reader that converts the USB interface into a memory card interface, enabling communication between the two.
+	
+Example in Java: Media Player Adapter 
+Problem: You have a MediaPlayer interface that can play basic audio formats, but you want to integrate an advanced third-party AdvancedMediaPlayer class that can play video formats like MP4 and VLC. These two interfaces are incompatible.
+	Step 1: Define the Target Interface
+		// Target Interface
+		public interface MediaPlayer {
+			void play(String audioType, String fileName);
+		}
+	Step 2: Create the Adaptee
+		// Adaptee Interface
+		public interface AdvancedMediaPlayer {
+			void playVlc(String fileName);
+			void playMp4(String fileName);
+		}
+		// Adaptee Implementation 1
+		public class VlcPlayer implements AdvancedMediaPlayer {
+			@Override
+			public void playVlc(String fileName) {
+				System.out.println("Playing VLC file: " + fileName);
+			}
+			@Override
+			public void playMp4(String fileName) {
+				// Not applicable for VLC Player
+			}
+		}
+		// Adaptee Implementation 2
+		public class Mp4Player implements AdvancedMediaPlayer {
+			@Override
+			public void playVlc(String fileName) {
+				// Not applicable for MP4 Player
+			}
+			@Override
+			public void playMp4(String fileName) {
+				System.out.println("Playing MP4 file: " + fileName);
+			}
+		}
+	Step 3: Create the Adapter - The adapter converts the MediaPlayer interface into the AdvancedMediaPlayer interface.
+		// Adapter Class
+		public class MediaAdapter implements MediaPlayer {
+			private AdvancedMediaPlayer advancedMediaPlayer;
+			public MediaAdapter(String audioType) {
+				if (audioType.equalsIgnoreCase("vlc")) {
+					advancedMediaPlayer = new VlcPlayer();
+				} else if (audioType.equalsIgnoreCase("mp4")) {
+					advancedMediaPlayer = new Mp4Player();
+				}
+			}
+			@Override
+			public void play(String audioType, String fileName) {
+				if (audioType.equalsIgnoreCase("vlc")) {
+					advancedMediaPlayer.playVlc(fileName);
+				} else if (audioType.equalsIgnoreCase("mp4")) {
+					advancedMediaPlayer.playMp4(fileName);
+				}
+			}
+		}
+	Step 4: Use the Adapter in Client Code
+		// Client Class
+		public class AudioPlayer implements MediaPlayer {
+			private MediaAdapter mediaAdapter;
+
+			@Override
+			public void play(String audioType, String fileName) {
+				if (audioType.equalsIgnoreCase("mp3")) {
+					System.out.println("Playing MP3 file: " + fileName);
+				} else if (audioType.equalsIgnoreCase("vlc") || audioType.equalsIgnoreCase("mp4")) {
+					mediaAdapter = new MediaAdapter(audioType);
+					mediaAdapter.play(audioType, fileName);
+				} else {
+					System.out.println("Invalid media type: " + audioType);
+				}
+			}
+		}
+	Step 5: Test the Adapter
+		public class Main {
+			public static void main(String[] args) {
+				AudioPlayer audioPlayer = new AudioPlayer();
+
+				audioPlayer.play("mp3", "song.mp3");
+				audioPlayer.play("vlc", "movie.vlc");
+				audioPlayer.play("mp4", "video.mp4");
+				audioPlayer.play("avi", "unsupported.avi");
+			}
+		}
+Advantages:
+	1) Seamless Integration: Enables interaction between incompatible interfaces without modifying existing code.
+	2) Reusability: Adaptee code can be reused across different systems.
+	3) Single Responsibility: Adapter focuses solely on translating interfaces.
+Disadvantages:
+	1) Extra Layer: Adds additional abstraction and complexity.
+	2) Overuse: Excessive use can lead to an application cluttered with adapters.
+Real-World Use Cases:
+	1) Legacy Systems: Integrate old code with modern systems.
+	2) Third-Party APIs: Adapt APIs that don’t match your requirements.
+	3) Device Drivers: Adapting hardware interfaces to software systems.
+	
+=============================================================================================================================================================================
+
+2) Bridge Design Pattern:
+-------------------------
+	The Bridge Design Pattern is a structural design pattern that decouples an abstraction from its implementation so that the two can evolve independently. It is useful in situations where you want to avoid a permanent binding between an abstraction and its concrete implementation, promoting flexibility and scalability.
+
+Key Characteristics:
+	1) Separation of Concerns: Divides abstraction and implementation into separate class hierarchies, making them independent.
+	2) Composition Over Inheritance: The abstraction contains a reference to an implementation rather than being tightly coupled through inheritance.
+	3) Scalability: Adding new abstractions or implementations does not require changes to the existing code.
+	4) Reduces Complexity: Useful when a class hierarchy becomes too complex due to the combination of multiple dimensions (e.g., shape and color).
+
+Participants:
+	1) Abstraction: Defines the interface for the abstraction and maintains a reference to an implementation object.
+	2) Refined Abstraction: Extends the abstraction and adds more specific behavior.
+	3) Implementor: Defines the interface for the implementation classes.
+	4) Concrete Implementor: Implements the Implementor interface and provides concrete behavior.
+
+Real-Life Analogy: Imagine a TV Remote and a TV. The remote is an abstraction that allows you to control the TV, while the TV is the concrete implementation. By decoupling them, the same remote can work with different brands or models of TVs.
+
+Example in Java: Shape and Color Hierarchies
+	Scenario: You want to create shapes like circles and rectangles that can have different colors. Instead of creating separate classes for combinations (e.g., RedCircle, BlueRectangle), the Bridge Pattern separates the shape hierarchy from the color hierarchy.
+	Step 1: Define the Implementor Interface
+		// Implementor
+		public interface Color {
+			void applyColor();
+		}
+	Step 2: Create Concrete Implementors
+		// Concrete Implementor 1
+		public class RedColor implements Color {
+			@Override
+			public void applyColor() {
+				System.out.println("Applying Red Color");
+			}
+		}
+		// Concrete Implementor 2
+		public class BlueColor implements Color {
+			@Override
+			public void applyColor() {
+				System.out.println("Applying Blue Color");
+			}
+		}
+	Step 3: Define the Abstraction	
+		// Abstraction
+		public abstract class Shape {
+			protected Color color;
+			// Constructor
+			public Shape(Color color) {
+				this.color = color;
+			}
+			public abstract void draw();
+		}
+	Step 4: Create Refined Abstractions
+		// Refined Abstraction 1
+		public class Circle extends Shape {
+			private int radius;
+			public Circle(Color color, int radius) {
+				super(color);
+				this.radius = radius;
+			}
+			@Override
+			public void draw() {
+				System.out.print("Drawing Circle of radius " + radius + " with ");
+				color.applyColor();
+			}
+		}
+		// Refined Abstraction 2
+		public class Rectangle extends Shape {
+			private int length, width;
+			public Rectangle(Color color, int length, int width) {
+				super(color);
+				this.length = length;
+				this.width = width;
+			}
+			@Override
+			public void draw() {
+				System.out.print("Drawing Rectangle of dimensions " + length + "x" + width + " with ");
+				color.applyColor();
+			}
+		}
+	Step 5: Client Code
+		public class Main {
+			public static void main(String[] args) {
+				// Creating objects with different combinations of abstraction and implementation
+				Shape redCircle = new Circle(new RedColor(), 5);
+				Shape blueRectangle = new Rectangle(new BlueColor(), 10, 20);
+
+				redCircle.draw(); // Output: Drawing Circle of radius 5 with Applying Red Color
+				blueRectangle.draw(); // Output: Drawing Rectangle of dimensions 10x20 with Applying Blue Color
+			}
+		}
+		
+Advantages:
+	1) Flexibility: Both abstraction and implementation can vary independently.
+	2) Simplified Code: Reduces the number of subclasses required to represent combinations of abstraction and implementation.
+	3) Promotes Composition: Encourages composition over inheritance, making it easier to maintain.
+
+Disadvantages:
+	1) Complexity: Introduces additional layers of abstraction, which can be overkill for simple scenarios.
+	2) Requires Good Design: Improper use may complicate the code instead of simplifying it.
+
+When to Use the Bridge Pattern: 
+	1) When your class hierarchy has multiple dimensions: 
+		Example: Shapes with different colors, devices with different controls, etc.
+	2) To avoid a combinatorial explosion of classes:
+		Example: Creating a class for each combination of shape and color.
+	3) When abstractions and implementations need to evolve independently:
+		Example: Adding a new shape or a new color without modifying existing code.
+
+Real-World Use Cases:
+	1) Cross-Platform Applications: GUIs that need to work on multiple platforms (Windows, macOS).
+	2) Graphics Rendering: Separating the rendering process from the representation (e.g., OpenGL, DirectX).
+	3) Device Drivers: Abstracting device-specific details from high-level operations.
+	
+======================================================================================================================================================================
+
+2) Composite Design Pattern:
+----------------------------
+	The Composite Design Pattern is a structural design pattern used to treat individual objects and compositions of objects uniformly. It is particularly useful when you have a tree-like structure of objects, where individual objects and compositions (groups) of objects need to be treated the same way.
+	
+Key Characteristics of Composite Pattern:
+	1) Tree Structure: Represents part-whole hierarchies, where an object can contain other objects.
+	2) Uniformity: Individual objects and groups of objects share the same interface, making the client code treat them uniformly.
+	3) Recursive Composition: A composite object can contain both leaf objects (individual objects) and other composite objects (groups).
+	4) Flexibility: New types of components can be easily added without modifying existing code.
+	
+Participants:
+	1) Component: The common interface or abstract class for all objects (individual and composite).
+	2) Leaf: Represents individual objects in the composition. A Leaf does not have children.
+	3) Composite: Represents a group of objects (container) that can hold leaves or other composites.
+	4) Client: The code that interacts with Component objects uniformly.
+	
+Real-Life Analogy:
+	Imagine an organization structure:	
+	1) A department can have employees (leaves) or other departments (composites).
+	2) Both individual employees and departments share some common behavior, like "get details."
+
+Example in Java: 
+	File System Hierarchy - In this example, we'll model a file system where directories can contain files or other directories.
+	Step 1: Define the Component
+		// Component Interface
+		public interface FileSystem {
+			void showDetails();
+		}
+	Step 2: Create the Leaf
+		// Leaf Class
+		public class File implements FileSystem {
+			private String name;
+			public File(String name) {
+				this.name = name;
+			}
+			@Override
+			public void showDetails() {
+				System.out.println("File: " + name);
+			}
+		}
+	Step 3: Create the Composite
+		// Composite Class
+		import java.util.ArrayList;
+		import java.util.List;
+		public class Directory implements FileSystem {
+			private String name;
+			private List<FileSystem> children = new ArrayList<>();
+			public Directory(String name) {
+				this.name = name;
+			}
+			public void add(FileSystem component) {
+				children.add(component);
+			}
+			public void remove(FileSystem component) {
+				children.remove(component);
+			}
+			@Override
+			public void showDetails() {
+				System.out.println("Directory: " + name);
+				for (FileSystem child : children) {
+					child.showDetails();
+				}
+			}
+		}
+	Step 4: Use the Composite Pattern in Client Code
+		public class Main {
+			public static void main(String[] args) {
+				// Create individual files
+				FileSystem file1 = new File("Document.docx");
+				FileSystem file2 = new File("Picture.jpg");
+				FileSystem file3 = new File("Video.mp4");
+
+				// Create directories
+				Directory root = new Directory("Root");
+				Directory documents = new Directory("Documents");
+				Directory media = new Directory("Media");
+
+				// Add files to directories
+				documents.add(file1);
+				media.add(file2);
+				media.add(file3);
+
+				// Add directories to root
+				root.add(documents);
+				root.add(media);
+
+				// Display the file system structure
+				root.showDetails();
+			}
+		}
+
+Advantages:
+	1) Uniformity: Treats individual objects and groups of objects uniformly.
+	2) Flexibility: Easily add or modify the structure without altering the client code.
+	3) Hierarchy Representation: Models tree-like structures effectively.
+	
+Disadvantages:
+	1) Complexity: Can become complex if the hierarchy is deep or has many components.
+	2) Difficult Debugging: Debugging recursive structures can be challenging.
+	
+Real-World Use Cases:
+	1) File Systems: Files and directories.
+	2) Graphical User Interfaces (GUI): Widgets like buttons, panels, and windows.
+	3) Organizations: Employees and departments in a hierarchy.
+	4) XML/HTML Documents: Nodes (elements) containing other nodes.
+	
+============================================================================================================================================================================
+
+4) Proxy Design Pattern :
+-------------------------
+	The Proxy Design Pattern is a structural design pattern that provides a surrogate or placeholder object to control access to another object. The proxy object acts as an intermediary between the client and the actual object (known as the "real subject"), adding an additional level of control or functionality. This pattern is particularly useful in scenarios such as controlling access, lazy initialization, or adding extra functionality like logging or security checks.
+
+Key Characteristics:
+	1) Intermediary: The proxy serves as a substitute for the real object and forwards requests to it.
+	2) Control Access: Proxies can add pre-processing or post-processing logic, such as security checks, caching, or logging.
+	3) Transparency: To the client, the proxy and the real object have the same interface, making the use of the proxy seamless.
+	
+Participants:
+	1) Subject (Common Interface): Defines the common interface for both the proxy and the real object.
+	2) Real Subject: The actual object that does the work.
+	3) Proxy: Acts as a wrapper for the real subject, controlling access to it.
+	
+Types of Proxies:
+	1) Virtual Proxy: Delays the instantiation or initialization of a resource-intensive object until it is needed.
+	2) Protection Proxy: Controls access to the real object, ensuring that only authorized clients can access it.
+	3) Remote Proxy: Represents an object that exists in a different location, such as on a remote server.
+	4) Caching Proxy: Provides temporary storage of frequently accessed resources to improve performance.
+	5) Logging Proxy: Adds logging functionality before or after calling methods on the real subject.
+
+Example in Java: Virtual Proxy for Image Loading
+	Scenario: Suppose you have an application that loads images. Loading large image files is resource-intensive, so you use a proxy to defer their loading until they are actually needed.
+	Step 1: Define the Subject Interface
+		// Subject Interface
+		public interface Image {
+			void display(); // Method to display the image
+		}
+	Step 2: Create the Real Subject
+		// Real Subject
+		public class RealImage implements Image {
+			private String fileName;
+
+			public RealImage(String fileName) {
+				this.fileName = fileName;
+				loadFromDisk(); // Simulate loading the image from disk
+			}
+
+			private void loadFromDisk() {
+				System.out.println("Loading image from disk: " + fileName);
+			}
+
+			@Override
+			public void display() {
+				System.out.println("Displaying image: " + fileName);
+			}
+		}
+	Step 3: Create the Proxy
+		// Proxy
+		public class ImageProxy implements Image {
+			private String fileName;
+			private RealImage realImage;
+
+			public ImageProxy(String fileName) {
+				this.fileName = fileName;
+			}
+
+			@Override
+			public void display() {
+				// Load the image only when it is needed
+				if (realImage == null) {
+					realImage = new RealImage(fileName);
+				}
+				realImage.display();
+			}
+		}
+	Step 4: Client Code
+		public class Main {
+			public static void main(String[] args) {
+				// Create a proxy for an image
+				Image image = new ImageProxy("my_photo.jpg");
+
+				// Display the image (triggers loading)
+				System.out.println("First time displaying the image:");
+				image.display();
+
+				// Display the image again (no loading this time)
+				System.out.println("\nSecond time displaying the image:");
+				image.display();
+			}
+		}
+Explanation:
+	1) Proxy Behavior: 
+		- The proxy (ImageProxy) defers the loading of the real image (RealImage) until the display() method is called for the first time.
+		- On subsequent calls, the proxy simply forwards the request to the already loaded real image.
+	2) Benefits:
+		- Saves resources by avoiding unnecessary loading.
+		- Adds transparency to the client since the proxy has the same interface as the real image.
+		
+Advantages of Proxy Design Pattern:
+	1) Controlled Access: Provides a way to control access to the real object, such as through authentication or lazy loading.
+	2) Decoupling: Decouples the client from the implementation details of the real object.
+	3) Enhancements: Allows additional functionalities such as logging or caching to be added without modifying the real subject.
+	4) Improved Performance: Useful for resource-heavy objects that do not need to be loaded or accessed immediately.
+	
+Disadvantages:
+	1) Increased Complexity: Adds additional layers of abstraction, which can complicate the codebase.
+	2) Potential Overhead: The proxy introduces additional method calls, which may impact performance slightly.
+	
+Real-World Use Cases:
+	1) Lazy Loading: Load large objects like images, documents, or datasets only when required.
+	2) Security: Implement access control mechanisms to protect sensitive objects.
+	3) Remote Access: Access remote objects via a proxy that abstracts the network details.
+	4) Logging and Monitoring: Track method calls and data access.
+
+============================================================================================================================================================================

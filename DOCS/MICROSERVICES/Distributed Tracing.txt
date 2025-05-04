@@ -1,0 +1,29 @@
+Observability and OpenTelemetry
+
+What is Observability?
+	Observability is the process of understanding the internal state of the application with the help of different indicators such as Logs, Metrics, and Tracing information.
+	
+Three pillars of observability
+	Observability focuses on three main telemetry types:
+	1) Logs : Logs are granular, time-stamped, complete and immutable records of application events. Among other things, logs can be used to create a high-fidelity, millisecond-by-millisecond record of every event, complete with surrounding context. Developers use logs for troubleshooting and debugging.
+	2) Traces : Traces record the end-to-end “journey” of every user request, from the user interface or mobile app, through the entire architecture, and back to the user.
+	3) Metrics : Metrics (sometimes called time series metrics) are fundamental measures of application and system health over time. For example, metrics are used to measure how much memory or CPU capacity an application uses in five minutes, or how much latency an application experiences during a usage spike.
+	
+Bullet Points:
+	1) Process of understanding the internal state of the application with the help of different indicators
+	2) Logs, Metrics, and Traces
+	3) Loki for Logging
+	4) Prometheus for scrapping Metrics
+	5) Tempo to manage traces
+	6) Grafana to visualize
+	
+Grafana Stack
+	Grafana Stack comprises about 3 softwares:
+	1) Grafana: This is the most widely used tool that helps to monitor and visualize the metrics of our application. Users can visualize the metrics by building different dashboards and can use different kinds of charts to visualize the metrics. We can also configure alerts to be notified whenever a metric reaches a certain required threshold.
+	2) Prometheus : To collect metrics, we will be using Prometheus, a metrics aggregation tool.
+	3) Loki: is a Log Aggregation tool that receives the logs from our application and indexes the logs to be visualized using Grafana.
+	4) Tempo: is used as a distributed tracing tool, which can track requests that span across different systems.
+	
+Implementing Observability
+	The below picture shows you a high-level overview of our project and how tools like Grafana, Loki, and Tempo fit into our overall architecture.
+	

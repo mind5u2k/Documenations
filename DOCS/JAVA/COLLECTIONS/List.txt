@@ -1,0 +1,298 @@
+1. ArrayList :
+--------------
+	An ArrayList is a resizable array implementation of the List interface. It provides fast random access (O(1) for index-based lookups) and is optimized for scenarios where reads and appends are frequent. However, inserting or deleting elements from positions other than the end may require shifting elements, making those operations O(n).
+	
+	Internal Architecture
+		1. Underlying Data Structure
+			At its core, an ArrayList uses an internal array (commonly named elementData) to store its elements. In the OpenJDK source, you’ll typically see a field like:
+				transient Object[] elementData;
+			In addition, two key fields are maintained:
+				* size: An integer that tracks how many elements are currently stored.
+				* modCount: An integer used by fail-fast iterators. It increases upon structural modifications (such as adding or removing elements) and helps detect concurrent modifications.
+		
+		2. Capacity and Resizing
+			When you create an ArrayList using the default constructor, it starts with an empty array or a default capacity (often 10) when the first element is added. As elements get added, the internal array may run out of space. To handle this, ArrayList increases its capacity.
+			The expansion strategy typically works as follows:
+				* Check Available Capacity: Before adding a new element, the internal method (often called ensureCapacityInternal) checks if there is room in the elementData array.
+				* Growing the Array: If needed, the grow() method is invoked. The new capacity is calculated using a formula similar to:
+					int newCapacity = oldCapacity + (oldCapacity >> 1);
+					This increases the capacity by roughly 50%, which is a trade-off balancing time spent in frequent resizing versus memory usage.
+				* Copying Old Elements: A new array is allocated, and the old elements are copied into it using System.arraycopy().
+			This mechanism allows the ArrayList to maintain its performance characteristics while dynamically handling additional data.
+			
+		3. Fail-Fast Iterators
+			The modCount field plays a significant role in how ArrayList iterators work. Iterators are designed to be fail-fast, meaning that if the list is structurally modified (and not through the iterator’s own methods) during iteration, a ConcurrentModificationException is thrown. This provides a way to catch unintended concurrent modifications.
+			
+		Example: Using ArrayList in Java
+			Below is a complete Java program demonstrating the basics of creating an ArrayList, adding elements to it, accessing elements by index (taking advantage of constant-time random access), and performing an update.
+			
+				import java.util.ArrayList;
+
+				public class ArrayListInternalExample {
+					public static void main(String[] args) {
+						// Create an ArrayList. Initially, it has a default capacity (typically 10 when first used)
+						ArrayList<String> names = new ArrayList<>();
+
+						// Adding elements to the ArrayList
+						names.add("Alice");    // Element added to index 0.
+						names.add("Bob");      // Element added to index 1.
+						names.add("Charlie");  // Element added to index 2.
+						
+						// Using the ArrayList's fast random access (O(1))
+						System.out.println("Element at index 1: " + names.get(1));  // Expected output: Bob
+						
+						// Update an element at a specific index
+						names.set(1, "David"); // Changes "Bob" to "David"
+						System.out.println("After update: " + names);
+						
+						// Display the current size of the ArrayList
+						System.out.println("Current size: " + names.size());
+						
+						// Iterating over the elements
+						System.out.println("Iterating using for-each:");
+						for (String name : names) {
+							System.out.println(name);
+						}
+					}
+				}
+			Explanation of the Code
+				* Creation & Addition: An ArrayList named names is created. When elements are added with add(), if the underlying array lacks room, it is automatically resized by calculating the new capacity and copying over the existing elements.
+				* Random Access: The get(1) operation retrieves the element at index 1 in constant time, demonstrating the efficient random access provided by an array-based implementation.
+				* Updates and Size: The set() method allows a fast update at any given index. The size() method returns the number of elements that are currently stored, not the capacity of the backing array.
+				* Iteration: Iterating over an ArrayList is efficient, with the internal modCount ensuring that any structural modifications during iteration are detected by the iterator’s fail-fast mechanism.
+
+	
+=================================================================================================================================================================================
+
+2. LinkedList :
+---------------
+	LinkedList in Java is a concrete implementation of the List and Deque interfaces. Unlike an ArrayList, which is backed by a resizable array, a LinkedList is implemented as a doubly-linked list. This design choice has several implications:
+	* Efficient Insertions/Deletions: Adding or removing elements at the beginning or at the end (and even in the middle, once you have a reference) is fast—typically O(1) if the node is directly accessible.
+	* Sequential Access: However, accessing an element by its index requires traversal from one end of the list, leading to O(n) performance.
+	* Memory Overhead: Each element is wrapped inside a node that holds more than just the value, thus incurring a higher memory overhead compared to array-based structures.
+	
+	Internal Architecture
+		1. The Node Structure :
+			Internally, LinkedList uses a private static inner class called Node (historically referred to as Entry in older versions). Each node in the list contains:
+			* Element (item): The actual data stored in the node.
+			* Next Pointer: A reference to the next node in the sequence.
+			* Previous Pointer: A reference to the previous node.
+			A simplified version of this internal class looks like:
+				private static class Node<E> {
+					E item;
+					Node<E> next;
+					Node<E> prev;
+					
+					Node(Node<E> prev, E element, Node<E> next) {
+						this.item = element;
+						this.next = next;
+						this.prev = prev;
+					}
+				}
+			This doubly-linked structure allows the list to efficiently perform operations at both ends. The LinkedList class itself maintains two key pointers:
+				* first: Reference to the first node in the list.
+				* last: Reference to the last node in the list.
+			There is also a size field that tracks the number of elements and a modCount field that helps iterators detect concurrent modifications (thus supporting the fail-fast behavior).
+
+		2. Key Operations and Their Workings
+			Insertion
+				* At the Beginning (addFirst): When adding an element at the start, a new node is created. This new node’s next pointer is assigned the current first node, and if that node exists, its prev pointer is updated to reference the new node. The list’s first pointer is then updated to the new node.
+				* At the End (addLast/add): Similarly, when adding an element at the end, a new node is created with its prev pointer referencing the current last node. The current last node’s next pointer is updated to the new node, and the last pointer is set to the new node.
+				* Middle Insertions: When inserting in the middle, the list is traversed from either end (optimizing by starting from whichever is closer) to find the target index. The new node is then linked between its predecessor and successor nodes.
+			Deletion
+				* Removing a Node: When removing an element, the node’s previous and next pointers are updated to bypass the node being removed. If the node is at one of the ends, the first or last pointers are updated accordingly.
+				* Iterator Removal: The iterator for LinkedList is fail-fast; it relies on the modCount variable. If a concurrent modification is detected (any structural change outside the iterator’s own remove method), a ConcurrentModificationException is thrown.
+			Traversal
+				* To access or iterate through elements, the list starts from the first node and follows the next pointers sequentially. Although this means random access (via get(index)) involves traversing up to n elements, iteration in order is straightforward and efficient.
+				
+		Example: Using LinkedList in Java
+			Below is a complete Java program demonstrating the creation and manipulation of a LinkedList. This example illustrates adding elements at both ends, obtaining the first and last elements, and iterating over the list.
+			
+				import java.util.LinkedList;
+				import java.util.Iterator;
+
+				public class LinkedListInternalExample {
+					public static void main(String[] args) {
+						// Create a LinkedList of strings.
+						LinkedList<String> list = new LinkedList<>();
+
+						// Adding elements at the end using add() (equivalent to addLast())
+						list.add("Apple");
+						list.add("Banana");
+						list.add("Cherry");
+
+						// Adding elements at the beginning using addFirst()
+						list.addFirst("Mango");
+
+						// Adding an element at the end using addLast()
+						list.addLast("Peach");
+
+						// Display the first and last elements of the LinkedList
+						System.out.println("First Element: " + list.getFirst()); // Output: Mango
+						System.out.println("Last Element: " + list.getLast());   // Output: Peach
+
+						// Iterating through the LinkedList using an iterator
+						System.out.println("Iterating over LinkedList:");
+						Iterator<String> iterator = list.iterator();
+						while (iterator.hasNext()) {
+							System.out.println(iterator.next());
+						}
+
+						// Removing an element from the middle of the list
+						list.remove("Banana");
+						System.out.println("\nAfter removing 'Banana': " + list);
+					}
+				}
+			Explanation of the Code
+				* Creation & Addition: We create a LinkedList and add elements using both add(), addFirst(), and addLast(). Internally, each addition creates a new node and links it appropriately using the pointers.
+				* Accessing Ends: The calls to getFirst() and getLast() quickly retrieve elements at both ends, showcasing the advantage of having direct pointers to the start and end of the list.
+				* Iteration: An iterator is used to traverse the list sequentially. If any structural modification is made during iteration (from outside the iterator), Java’s fail-fast behavior will raise an exception.
+				* Removal: Removing "Banana" demonstrates how the list adjusts its pointers to exclude a node, ensuring the integrity of the doubly-linked structure.
+				
+		Final Thoughts
+			A deep understanding of LinkedList reveals its pros and cons:
+				* Pros: 
+					- Efficient insertion and deletion at the ends (and at known positions).
+					- Supports both stack and queue operations naturally.
+				* Cons:
+					- Slow random access, as each call to get(index) involves traversal.
+					- More memory usage, given the additional pointer fields in each node.
+				If you're considering scenarios where you frequently add or remove elements at the beginning or end of a list, LinkedList provides an elegant and efficient solution. Conversely, for scenarios requiring heavy random access, an ArrayList might be a better choice—even with its own resizing strategies.
+				
+=================================================================================================================================================================================
+
+3. Vector :
+-----------
+
+=================================================================================================================================================================================
+4. Stack :
+----------
+
+=================================================================================================================================================================================
+
+5. CopyOnWriteArrayList :
+-------------------------
+	CopyOnWriteArrayList resides in the java.util.concurrent package and is designed around the concept of immutability for readers. Its primary characteristics are:
+		* Immutable Snapshots for Iteration: When a thread iterates the list, it operates on an unchanging snapshot of the underlying array. This eliminates any need for locks during read operations.
+		* Copy‐On‐Write Strategy: Every mutative operation (like add, remove, or set) creates a new copy of the underlying array and modifies that copy. After the update, the reference to this new array is published via a volatile variable.
+		* Thread-Safety: Readers can access the array without any synchronization, while writers acquire a lock to perform their copy-and-update operations.
+		
+	Internal Architecture
+		1. Underlying Data Storage
+			At the core of CopyOnWriteArrayList is a private, volatile array—commonly defined as follows:
+				private transient volatile Object[] array;
+			
+			* Volatile Reference: The use of volatile ensures that all threads see the most recent version of the array without needing explicit synchronization for read operations.
+			* Snapshot Semantics: When a writer updates the list, it allocates a new array, copies the current elements, performs the modification, and then sets the instance variable to the new array. This ensures that any thread iterating over the old array sees a consistent, unmodified snapshot.
+			
+		2. Mutative Operations
+			For any modification (for instance, in the add(E e) method), CopyOnWriteArrayList follows these steps:
+			1) Lock Acquisition for Writers: Even though reads are lock-free, writes are synchronized to ensure atomicity. A built-in lock (often using a final internal lock object) ensures that one thread at a time performs modifications.
+			2) Copying the Array: The current array is copied using methods like Arrays.copyOf(), creating a new array with additional capacity (or with one element removed, as needed).
+			3) Perform Modification: The intended change (such as adding an element at the end) is applied to the new copy.
+			4) Publishing the New Array: The reference to the manipulated copy is then assigned to the volatile field, making it immediately visible to other threads.
+			This process can be roughly illustrated as:
+			
+				public boolean add(E e) {
+					final ReentrantLock lock = this.lock;
+					lock.lock();
+					try {
+						Object[] current = getArray();   // Get the current snapshot.
+						int len = current.length;
+						// Create a new array with one extra slot.
+						Object[] newElements = Arrays.copyOf(current, len + 1);
+						newElements[len] = e;              // Modify the new array.
+						setArray(newElements);             // Publish the new snapshot.
+						return true;
+					} finally {
+						lock.unlock();
+					}
+				}
+			
+			Note that the actual method involves additional bounds checking and may update internal modification counts, but the essence is in creating a new copy for each write.
+			
+		3. Read Operations
+			* Lock-Free Reads: When a thread calls a read method like get(int index) or iterates over the collection, it accesses the current array reference without acquiring any lock.
+			* Snapshot Iterators: Iterators in CopyOnWriteArrayList operate over the array snapshot that was current at the time the iterator was created. This means the iterator is not “live” and will not reflect any updates that occur after its creation. However, this design makes the iterator immune to ConcurrentModificationException.
+			
+	Performance Considerations
+			* High Read, Low Write Workloads: Because mutations require copying the entire underlying array, CopyOnWriteArrayList is best utilized in scenarios with frequent reads and only occasional writes.
+			* Memory Overhead and GC: Each mutation involves an allocation and subsequent garbage collection of the old array, which can be acceptable if writes are infrequent.
+			
+	Example: Using CopyOnWriteArrayList in Java
+		Here’s an example that demonstrates creating a CopyOnWriteArrayList, performing concurrent read and write operations, and showing the snapshot behavior of iterators.
+		
+			import java.util.List;
+			import java.util.Iterator;
+			import java.util.concurrent.CopyOnWriteArrayList;
+
+			public class CopyOnWriteArrayListExample {
+				public static void main(String[] args) throws InterruptedException {
+					// Create a CopyOnWriteArrayList and add some initial elements.
+					List<String> cowList = new CopyOnWriteArrayList<>();
+					cowList.add("Alpha");
+					cowList.add("Beta");
+					cowList.add("Gamma");
+
+					// Start a thread that iterates over the list.
+					Thread readerThread = new Thread(() -> {
+						System.out.println("Reader Thread: Starting Iteration");
+						Iterator<String> iterator = cowList.iterator();
+						try {
+							for (String s : cowList) {
+								System.out.println("Reader sees: " + s);
+								// Sleep to simulate a long iteration.
+								Thread.sleep(100);
+							}
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						System.out.println("Reader Thread: Iteration Complete");
+					});
+
+					// Start a thread that modifies the list.
+					Thread writerThread = new Thread(() -> {
+						try {
+							// Sleep to allow the reader to start iterating.
+							Thread.sleep(150);
+							System.out.println("Writer Thread: Adding Delta");
+							cowList.add("Delta");
+							// Remove an element.
+							System.out.println("Writer Thread: Removing Beta");
+							cowList.remove("Beta");
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					});
+
+					readerThread.start();
+					writerThread.start();
+
+					// Wait for both threads to finish.
+					readerThread.join();
+					writerThread.join();
+
+					// Show the final state of the list.
+					System.out.println("\nFinal List Contents:");
+					cowList.forEach(System.out::println);
+				}
+			}
+		Explanation of the Code
+			* Initialization: The CopyOnWriteArrayList is initialized with three elements: "Alpha", "Beta", and "Gamma".
+			* Reader Thread: This thread iterates over the list. Since it uses the snapshot taken at the time the iteration begins, it will only see the elements as they were at that moment—even if the writer modifies the underlying array during iteration.
+			* Writer Thread: After a slight delay, the writer thread adds "Delta" and removes "Beta". These modifications create new copies of the underlying array. However, the reader’s iterator continues to see the original snapshot.
+			* Final Output: Once both threads complete, the main thread prints the final state of the list, which reflects all changes made by the writer.
+			
+	Final Thoughts
+		CopyOnWriteArrayList offers a compelling solution for concurrent reads without locking, though it pays a price when writes occur. Its use of snapshot iterators means that readers operate on a stable collection view, free from interference caused by concurrent modifications. For systems where read operations dominate and thread-safety is critical, this design can be extremely valuable.
+ 
+=================================================================================================================================================================================
+
+6. Immutable Lists : 
+--------------------
+=================================================================================================================================================================================
+
+7. Synchronized List Wrappers :
+-------------------------------
+
+=================================================================================================================================================================================

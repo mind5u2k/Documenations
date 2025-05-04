@@ -1,0 +1,129 @@
+Sorting algorithms are fundamental to computer science and software development. They rearrange the elements of an array or list into a specific order (typically ascending or descending) and come in many flavors—each with its own advantages, limitations, and best-use scenarios. Below, we'll explore the major sorting algorithms in detail, including their underlying ideas, complexities, and code examples.
+
+1) 1. Comparison-Based Sorting Algorithms
+	A. Bubble Sort :
+		Idea: Bubble Sort repeatedly steps through the list, compares adjacent elements, and swaps them if they are in the wrong order. With each full pass through the array, the largest unsorted element “bubbles up” to its correct position.
+			Example Code (Java):
+		
+			public void bubbleSort(int[] arr) {
+				int n = arr.length;
+				// Outer loop: each pass will properly position one element.
+				for (int i = 0; i < n - 1; i++) {
+					// Track whether any swap happens in this pass.
+					boolean swapped = false;
+					// Last i elements are already in place.
+					for (int j = 0; j < n - i - 1; j++) {
+						if (arr[j] > arr[j + 1]) {
+							// Swap adjacent elements.
+							int temp = arr[j];
+							arr[j] = arr[j + 1];
+							arr[j + 1] = temp;
+							swapped = true;
+						}
+					}
+					// If no swap occurred, the array is sorted.
+					if (!swapped) break;
+				}
+			}
+		Complexity:
+			* Best-case: O(n) (if already sorted, with an optimized version that checks for no swaps)
+			* Average-case: O(n²)
+			* Worst-case: O(n²)
+			* Stability: Stable
+			* In-Place: Yes
+			
+	B. Selection Sort
+		Idea: Selection Sort works by repeatedly finding the minimum element (for ascending order) from the unsorted portion and swapping it with the first unsorted element.
+			Example Code (Java):
+			
+			public void selectionSort(int[] arr) {
+				int n = arr.length;
+				for (int i = 0; i < n - 1; i++) {
+					// Assume the element at i is the minimum.
+					int minIndex = i;
+					// Find the minimum element in the remaining unsorted array.
+					for (int j = i + 1; j < n; j++) {
+						if (arr[j] < arr[minIndex]) {
+							minIndex = j;
+						}
+					}
+					// Swap the found minimum with the first unsorted element.
+					int temp = arr[i];
+					arr[i] = arr[minIndex];
+					arr[minIndex] = temp;
+				}
+			}
+		
+		Complexity:
+			* Best, Average, Worst-case: O(n²)
+			* Stability: Not stable by default (can be modified to be stable at extra cost)
+			* In-Place: Yes
+			
+	C. Insertion Sort
+		Idea: Insertion Sort builds the sorted sequence one element at a time by taking each element and “inserting” it into its correct position in the already sorted part.
+			Example Code (Java):
+
+				public void insertionSort(int[] arr) {
+					int n = arr.length;
+					for (int i = 1; i < n; i++) {
+						int key = arr[i];
+						int j = i - 1;
+						// Shift elements of the sorted part that are greater than key.
+						while (j >= 0 && arr[j] > key) {
+							arr[j + 1] = arr[j];
+							j--;
+						}
+						// Insert key where it belongs.
+						arr[j + 1] = key;
+					}
+				}
+		
+		Complexity:
+			* Best-case: O(n) (when the array is nearly sorted)
+			* Average and Worst-case: O(n²)
+			* Stability: Stable
+			* In-Place: Yes
+			
+	D. Merge Sort
+		Idea: Merge Sort is a classic divide-and-conquer algorithm. It divides the array into halves, recursively sorts each half, and then merges the two sorted halves back together.
+			Example Code (Java):
+			
+				public void mergeSort(int[] arr, int left, int right) {
+					if (left < right) {
+						int mid = (left + right) / 2;
+						// Recursively sort the first and second halves.
+						mergeSort(arr, left, mid);
+						mergeSort(arr, mid + 1, right);
+						// Merge the two sorted halves.
+						merge(arr, left, mid, right);
+					}
+				}
+
+				private void merge(int[] arr, int left, int mid, int right) {
+					// Sizes of the two subarrays.
+					int n1 = mid - left + 1;
+					int n2 = right - mid;
+					// Temporary arrays.
+					int[] L = new int[n1];
+					int[] R = new int[n2];
+					// Copy data to temporary arrays.
+					for (int i = 0; i < n1; i++) L[i] = arr[left + i];
+					for (int j = 0; j < n2; j++) R[j] = arr[mid + 1 + j];
+					
+					int i = 0, j = 0, k = left;
+					// Merge the temporary arrays back into arr.
+					while (i < n1 && j < n2) {
+						if (L[i] <= R[j]) {
+							arr[k++] = L[i++];
+						} else {
+							arr[k++] = R[j++];
+						}
+					}
+					// Copy any remaining elements.
+					while (i < n1) arr[k++] = L[i++];
+					while (j < n2) arr[k++] = R[j++];
+				}
+		Complexity:
+			* Best, Average, Worst-case: O(n log n)
+			* Stability: Stable
+			* In-Place: Not strictly in-place (requires additional memory for arrays)

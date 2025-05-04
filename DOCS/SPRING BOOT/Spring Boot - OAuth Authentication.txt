@@ -1,0 +1,138 @@
+OAuth (Open Authorization) is an open standard that allows third‐party applications to access a user’s resources without exposing user credentials. In Spring Boot, you can implement OAuth authentication in one of two major ways:
+
+	1) As an OAuth2 Client (Social Login): Your application acts as a client that delegates user authentication to a trusted OAuth provider (such as Google, GitHub, Facebook, etc.). Here the user is redirected to the provider’s authorization page; after a successful login, the provider issues an authorization code (or token) that Spring Security uses to log the user in.
+	2) As an OAuth2 Resource Server: Your application protects REST endpoints by requiring that all incoming requests carry a valid access token (often a JWT). In this configuration, your service acts as a resource server that validates tokens issued by an external authorization server.
+
+Below, we’ll walk through an example of implementing OAuth2 Client (Social Login) using Spring Boot and Spring Security. (A similar approach applies for resource servers using Spring Security’s resource server support.)
+
+1. Maven Dependencies
+	You need to add the following dependencies in your pom.xml:
+	
+		<dependencies>
+		  <!-- Basic Web & Security starters -->
+		  <dependency>
+			  <groupId>org.springframework.boot</groupId>
+			  <artifactId>spring-boot-starter-web</artifactId>
+		  </dependency>
+		  <dependency>
+			  <groupId>org.springframework.boot</groupId>
+			  <artifactId>spring-boot-starter-security</artifactId>
+		  </dependency>
+		  <!-- OAuth2 Client support -->
+		  <dependency>
+			  <groupId>org.springframework.boot</groupId>
+			  <artifactId>spring-boot-starter-oauth2-client</artifactId>
+		  </dependency>
+		</dependencies>
+		
+	Spring Boot autoconfiguration makes OAuth2 integration straightforward by using these dependencies.
+	
+2. Configuration
+	a. Application Properties
+		-In your application.yml (or application.properties) file, configure the OAuth provider you want to use. Here’s an example using Google as the authorization provider:
+		
+			spring:
+			  security:
+				oauth2:
+				  client:
+					registration:
+					  google:
+						client-id: YOUR_GOOGLE_CLIENT_ID
+						client-secret: YOUR_GOOGLE_CLIENT_SECRET
+						scope: openid, profile, email
+						redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+					provider:
+					  google:
+						authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+						token-uri: https://www.googleapis.com/oauth2/v4/token
+						user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+						user-name-attribute: sub
+						
+		Notes:
+			* client-id/client-secret: These come from registering your application with the OAuth provider (Google, in this case).
+			* scope: The requested scopes control what information you can access (e.g., basic profile information and email).
+			* redirect-uri: Spring Security uses a built-in endpoint /login/oauth2/code/{registrationId} to complete the OAuth2 authorization exchange.
+			
+	b. Security Configuration
+		- For many cases, the default security configuration is enough if you just want to allow users to log in via OAuth. If you need to customize access rules, you can create a custom security filter chain. For example:
+
+				package com.example.demo.config;
+
+				import org.springframework.context.annotation.Bean;
+				import org.springframework.context.annotation.Configuration;
+				import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+				import org.springframework.security.web.SecurityFilterChain;
+
+				@Configuration
+				public class SecurityConfig {
+
+					@Bean
+					public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+						http
+							// Disable CSRF for simplicity (adjust based on your application needs)
+							.csrf().disable()
+							// The following rule permits all requests to the root and OAuth2 login endpoints, requiring authentication elsewhere.
+							.authorizeHttpRequests(authorize -> authorize
+								.antMatchers("/", "/error").permitAll()
+								.anyRequest().authenticated()
+							)
+							// Enable OAuth2 login (Spring Boot auto-configures the authentication endpoints)
+							.oauth2Login(oauth2 -> oauth2
+								// Optional: customize the landing page after login
+								.defaultSuccessUrl("/home", true)
+							);
+						return http.build();
+					}
+				}
+
+		This configuration sets up your application so that:
+			* Unauthenticated users are redirected to the OAuth2 provider (e.g., Google) when trying to access protected resources.
+			* After a successful login, the user is redirected to /home.
+			
+3. Controller Example
+	Create a simple controller to verify that the user is authenticated. The OAuth2 login mechanism automatically creates an authenticated principal that you can access.
+	
+			package com.example.demo.controller;
+
+			import org.springframework.security.core.annotation.AuthenticationPrincipal;
+			import org.springframework.security.oauth2.core.user.OAuth2User;
+			import org.springframework.web.bind.annotation.GetMapping;
+			import org.springframework.web.bind.annotation.RestController;
+
+			@RestController
+			public class HomeController {
+
+				// Open endpoint for non-authenticated calls, such as index page.
+				@GetMapping("/")
+				public String index() {
+					return "<h1>Welcome</h1><a href='/oauth2/authorization/google'>Login with Google</a>";
+				}
+
+				// Protected endpoint that returns user info after authentication
+				@GetMapping("/home")
+				public String home(@AuthenticationPrincipal OAuth2User principal) {
+					String name = principal.getAttribute("name");
+					String email = principal.getAttribute("email");
+					return "Hello, " + name + " (" + email + ")! You have successfully logged in using Google OAuth.";
+				}
+			}
+
+		Explanation
+			* Index Endpoint (/): Displays a simple message with a link to trigger OAuth2 login. When the user clicks the login link, Spring Security automatically starts the OAuth2 authorization flow for Google, thanks to the default endpoint /oauth2/authorization/google.
+			* Home Endpoint (/home): This endpoint is secured. After a successful login, Spring Security injects an OAuth2User that contains the user’s information as provided by the OAuth provider (Google in this example). You can then use these details for personalization or further authorization checks.
+			
+4. Running the Application
+	a. Configure Your OAuth Provider: Register your application with the OAuth provider (Google) to obtain the client ID and client secret, and configure the redirect URI (which should match {baseUrl}/login/oauth2/code/google).
+	b. Start Your Application: Run your Spring Boot application (e.g., via your IDE or using mvn spring-boot:run).
+	c. Test the Flow:
+		* Open your browser to http://localhost:8080/.
+		* Click the "Login with Google" link.
+		* You’ll be redirected to Google’s login page; log in and authorize your application.
+		* After successful authorization, you’ll be redirected to /home where you see your user details.
+		
+5. Further Considerations
+	* Customizing the OAuth2User Service: If you need to map additional or custom user attributes from the provider, you can create a custom OAuth2UserService and register it in your security configuration.
+	* Handling Multiple Providers: You can add configurations for additional providers (like GitHub or Facebook) simply by providing a new registration in your application.yml or properties file.
+	* Resource Server (Optional): When your application is responsible for protecting resources using tokens issued by an authorization server, consider configuring it as an OAuth2 Resource Server by using spring-boot-starter-oauth2-resource-server and providing token validation rules.
+	
+	This example provides a comprehensive look at how to implement OAuth2 authentication in Spring Boot with an OAuth2 Client. It leverages Spring Security’s auto-configuration for OAuth2 to minimize boilerplate and lets you focus on your application logic.

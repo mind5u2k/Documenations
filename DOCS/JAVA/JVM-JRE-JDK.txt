@@ -1,0 +1,40 @@
+1) JVM (Java Virtual Machine):
+------------------------------
+	* What is it? - The JVM is an abstract machine responsible for running Java bytecode (compiled Java code). It serves as the runtime environment where Java applications execute.
+	* Role:
+		- It translates Java bytecode into machine code that the host operating system can understand.
+		- It manages system resources like memory and threads during execution.
+	* Key Features:
+		- Platform Independence: Write once, run anywhere (WORA). JVM allows the same Java program to run on Windows, Linux, or macOS.
+		- Garbage Collection: Automatically manages memory by removing unused objects.
+		- Security: Provides a secure runtime environment.
+	* Lifecycle of JVM:
+		1. Loads the bytecode into memory.
+		2. Verifies the bytecode.
+		3. Executes the bytecode using the Just-In-Time (JIT) compiler.
+		
+		
+2) JRE (Java Runtime Environment):
+----------------------------------
+	* What is it? The JRE is the software package that provides everything needed to run Java applications.
+	* Components:
+		- JVM: The JRE includes the JVM to execute the bytecode.
+		- Class Libraries: Predefined libraries, like java.util and java.io, which provide standard functionalities.
+		- Other Files: Configuration and runtime environment files required to execute a Java program.
+	* Role:
+		- It is for end-users who want to run Java programs, but not for development (since it doesn’t include the tools needed to write or compile code).
+	* Analogy: Think of JRE as the "engine" that powers Java programs—if you're a driver, you only need the engine to run the car.
+	
+	
+3) JDK (Java Development Kit):
+------------------------------
+	* What is it? The JDK is the complete package that provides all the tools and libraries required to develop, compile, and run Java applications.
+	* Components:
+		- JRE: It includes JRE, so you can run Java programs.
+		- Development Tools: Tools like javac (Java compiler), javadoc (for documentation), jar (for packaging), and others.
+	* Role:
+		- It is for developers who want to build, compile, and package Java applications.
+	* Versions of JDK:
+		- Oracle JDK
+		- OpenJDK
+	* Analogy: If the JRE is the car engine, the JDK is the full car, complete with tools to both run the car and customize it.

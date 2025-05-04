@@ -1,0 +1,123 @@
+1)  Stream API
+--------------------------------------------------------------------------------------------------------------------------------------
+The Stream class in Java, introduced in Java 8 as part of the Java Streams API, provides a powerful way to process collections of data. Here are commonly used methods from the Stream class categorized by their purpose:
+
+1. Creation:
+	Stream.of(T... values): Creates a stream from specified values.
+	Stream.empty(): Creates an empty stream.
+	Arrays.stream(T[] array): Creates a stream from an array.
+
+2. Intermediate Operations:
+These operations transform a stream and return another stream. They are lazily evaluated.
+
+	Filter: 
+		filter(Predicate<? super T> predicate): Filters elements based on a condition.
+	
+	Mapping: 
+		map(Function<? super T, ? extends R> mapper): Transforms each element to another value.
+		flatMap(Function<? super T, ? extends Stream<? extends R>> mapper): Flattens nested streams.
+
+	Sorting:
+		sorted(): Sorts elements in natural order.
+		sorted(Comparator<? super T> comparator): Sorts elements based on a custom comparator.
+
+	Limiting:
+		limit(long maxSize): Truncates the stream to a specified size.
+		skip(long n): Skips the first n elements.
+
+	Distinct:
+		distinct(): Returns a stream with unique elements.
+
+	Peeking:
+		peek(Consumer<? super T> action): Allows examining elements as they are processed.
+
+3. Terminal Operations:
+These operations produce a result or a side effect and terminate the stream pipeline.
+
+	Matching:
+		allMatch(Predicate<? super T> predicate): Returns true if all elements match the condition.
+		anyMatch(Predicate<? super T> predicate): Returns true if any element matches the condition.
+		noneMatch(Predicate<? super T> predicate): Returns true if no elements match the condition.
+
+	Finding:	
+		findFirst(): Returns the first element in the stream (optional).
+		findAny(): Returns any element in the stream (optional).
+
+	Reduction:
+		reduce(BinaryOperator<T> accumulator): Combines elements into a single value using an associative function.
+		reduce(T identity, BinaryOperator<T> accumulator): Combines elements using identity and an associative function.
+
+	Collecting:
+		collect(Collector<? super T, A, R> collector): Converts the stream into a collection like List, Set, or Map.
+
+	Counting:
+		count(): Returns the count of elements in the stream.
+
+	Iteration:
+		forEach(Consumer<? super T> action): Performs an action for each element.
+		forEachOrdered(Consumer<? super T> action): Performs an action for each element in encounter order.
+
+	Min/Max:
+		min(Comparator<? super T> comparator): Finds the smallest element.
+		max(Comparator<? super T> comparator): Finds the largest element.
+
+4. Short-circuit Operations:
+Short-circuiting means that the stream pipeline can exit early when certain conditions are met (e.g., findFirst, limit, anyMatch).
+
+==================================================================================================================================
+
+2)Collectors class:
+--------------------
+The Collectors class in Java is part of the java.util.stream package and provides a set of predefined collector implementations. These collectors facilitate common operations such as grouping, partitioning, or reducing elements in a stream into collections or other result types.
+
+Here are some of the most commonly used methods in the Collectors class:
+1. To Collection
+	toList(): Collects elements into an unmodifiable List.
+	toSet(): Collects elements into an unmodifiable Set.
+	toCollection(Supplier<C> collectionFactory): Collects elements into a specific collection type (e.g., LinkedList, TreeSet).
+Example:
+List<Integer> list = stream.collect(Collectors.toList());
+Set<Integer> set = stream.collect(Collectors.toSet());
+
+2. Joining
+	joining(): Concatenates stream elements into a single String.
+	joining(CharSequence delimiter): Concatenates stream elements with a delimiter.
+	joining(CharSequence delimiter, CharSequence prefix, CharSequence suffix): Concatenates stream elements with a delimiter, prefix, and suffix.
+Example:
+		System.out.println("\n-------- Collectors-joining() ---------");
+		String afterJoining = words.stream().collect(Collectors.joining());
+		System.out.println(afterJoining);
+
+		System.out.println("\n-------- Collectors-joining(CharSequence delimiter) ---------");
+		afterJoining = words.stream().collect(Collectors.joining(","));
+		System.out.println(afterJoining);
+
+		System.out.println(
+				"\n-------- joining(CharSequence delimiter, CharSequence prefix, CharSequence suffix) ---------");
+		afterJoining = words.stream().collect(Collectors.joining(",", "[", "]"));
+		System.out.println(afterJoining);
+		
+3. Summarizing
+	summarizingInt(ToIntFunction<? super T>): Produces an IntSummaryStatistics with count, sum, min, average, and max.
+	summarizingDouble(ToDoubleFunction<? super T>): Produces a DoubleSummaryStatistics.
+	summarizingLong(ToLongFunction<? super T>): Produces a LongSummaryStatistics.
+Example:
+IntSummaryStatistics stats = stream.collect(Collectors.summarizingInt(String::length));
+
+4. Reducing
+	reducing(BinaryOperator<T>): Reduces the stream to a single value using a BinaryOperator.
+	reducing(U identity, Function<? super T, ? extends U> mapper, BinaryOperator<U> combiner): Reduces using mapping and a combiner function.
+Example:
+Integer sum = stream.collect(Collectors.reducing(0, Integer::intValue, Integer::sum));
+
+5. Mapping
+	mapping(Function<? super T, ? extends U> mapper, Collector<? super U, A, R> downstream): Applies a mapping function to the stream elements and collects the results.
+Example:
+List<String> upperCaseNames = stream.collect(Collectors.mapping(String::toUpperCase, Collectors.toList()));
+
+6. Grouping
+	groupingBy(Function<? super T, ? extends K>): Groups elements by a classifier function.
+	groupingBy(Function<? super T, ? extends K>, Collector<? super T, A, D> downstream): Groups by a classifier function and performs a downstream collection.
+	groupingBy(Function<? super T, ? extends K>, Supplier<M> mapFactory, Collector<? super T, A, D> downstream): Groups into a custom map type.
+Example:
+Map<Integer, List<String>> groupedByLength = stream.collect(Collectors.groupingBy(String::length));

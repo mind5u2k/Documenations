@@ -1,0 +1,354 @@
+1) Observer Design Pattern :
+----------------------------
+	The Observer Design Pattern is a behavioral design pattern used to establish a one-to-many dependency between objects. When one object (subject) changes its state, all dependent objects (observers) are notified and updated automatically. This is particularly useful when maintaining consistency between related objects without tightly coupling them.
+	
+Key Characteristics:
+	1) Decoupling:	The subject and observers are loosely coupled, meaning the subject doesn't need to know the details of its observers.
+	2) One-to-Many Relationship: A single subject can have multiple observers that get notified of changes.
+	3) Dynamic: Observers can subscribe or unsubscribe at runtime, providing flexibility.
+	4) Push or Pull Communication: The subject can either push updates to observers or allow them to pull the required state.
+	
+Participants:
+	1) Subject: Maintains a list of observers and notifies them of any state changes.
+	2) Observer: Defines an interface for objects that need to be notified of changes in the subject.
+	3) ConcreteSubject: Implements the subject and contains the state of interest.
+	4) ConcreteObserver: Implements the observer and updates itself based on the state of the subject.
+	
+Real-Life Analogy:
+	Imagine a newsletter subscription:
+	1) The newsletter (subject) maintains a list of subscribers (observers).
+	2) Whenever a new issue is published, the subscribers are notified automatically.
+	
+Example in Java: Weather Monitoring System
+	Step 1: Define the Observer Interface
+		// Observer Interface
+		public interface Observer {
+			void update(float temperature, float humidity, float pressure);
+		}
+	Step 2: Define the Subject Interface
+		// Subject Interface
+		import java.util.ArrayList;
+		import java.util.List;
+
+		public interface Subject {
+			void registerObserver(Observer observer);
+			void removeObserver(Observer observer);
+			void notifyObservers();
+		}
+	Step 3: Create the ConcreteSubject
+		// Concrete Subject
+		public class WeatherData implements Subject {
+			private List<Observer> observers;
+			private float temperature;
+			private float humidity;
+			private float pressure;
+			public WeatherData() {
+				observers = new ArrayList<>();
+			}
+			@Override
+			public void registerObserver(Observer observer) {
+				observers.add(observer);
+			}
+			@Override
+			public void removeObserver(Observer observer) {
+				observers.remove(observer);
+			}
+			@Override
+			public void notifyObservers() {
+				for (Observer observer : observers) {
+					observer.update(temperature, humidity, pressure);
+				}
+			}
+			// Method to set new weather measurements and notify observers
+			public void setMeasurements(float temperature, float humidity, float pressure) {
+				this.temperature = temperature;
+				this.humidity = humidity;
+				this.pressure = pressure;
+				notifyObservers();
+			}
+		}
+	Step 4: Create ConcreteObservers
+		// Concrete Observer 1
+		public class CurrentConditionsDisplay implements Observer {
+			private float temperature;
+			private float humidity;
+			@Override
+			public void update(float temperature, float humidity, float pressure) {
+				this.temperature = temperature;
+				this.humidity = humidity;
+				display();
+			}
+			public void display() {
+				System.out.println("Current Conditions: " + temperature + "°C and " + humidity + "% humidity");
+			}
+		}
+		// Concrete Observer 2
+		public class StatisticsDisplay implements Observer {
+			private float temperatureSum = 0;
+			private int numReadings = 0;
+			@Override
+			public void update(float temperature, float humidity, float pressure) {
+				temperatureSum += temperature;
+				numReadings++;
+				display();
+			}
+			public void display() {
+				System.out.println("Average Temperature: " + (temperatureSum / numReadings) + "°C");
+			}
+		}
+	Step 5: Client Code
+		public class Main {
+			public static void main(String[] args) {
+				// Create Subject
+				WeatherData weatherData = new WeatherData();
+
+				// Create Observers
+				CurrentConditionsDisplay currentDisplay = new CurrentConditionsDisplay();
+				StatisticsDisplay statisticsDisplay = new StatisticsDisplay();
+
+				// Register Observers
+				weatherData.registerObserver(currentDisplay);
+				weatherData.registerObserver(statisticsDisplay);
+
+				// Simulate new weather measurements
+				weatherData.setMeasurements(25.5f, 65.0f, 1013.1f);
+				weatherData.setMeasurements(27.0f, 70.0f, 1012.8f);
+			}
+		}
+
+Advantages:
+	1) Loose Coupling: Subject and observers are decoupled, improving modularity and flexibility.
+	2) Dynamic Relationships: Observers can be added or removed at runtime.
+	3) Broadcast Communication: The subject efficiently notifies all observers of state changes.
+	
+Disadvantages:
+	1) Uncontrolled Notifications: Many observers can lead to unnecessary updates, increasing overhead.
+	2) Dependency on Subject: Observers are indirectly dependent on the subject.
+	3) Potential Cascading Updates: If one observer modifies the subject, it can trigger a chain of updates.
+	
+Real-World Use Cases:
+	1) Event Handling: GUIs where multiple widgets (observers) respond to user events (subject).
+	2) Real-Time Data Feeds: Stock market monitoring systems.
+	3) Publish-Subscribe Systems: Messaging systems like Kafka or RabbitMQ.
+	
+============================================================================================================================================================================
+
+2) Strategy Design Pattern :
+----------------------------
+	The Strategy Design Pattern is a behavioral design pattern that enables the selection of algorithms or behaviors at runtime. It defines a family of algorithms and encapsulates them in separate classes, allowing them to be interchangeable without altering the code that uses them. This pattern is particularly useful when an application needs to perform the same task using different approaches.
+	
+Key Characteristics:
+	1) Encapsulation: The pattern encapsulates algorithms in separate classes, adhering to the Single Responsibility Principle.
+	2) Interchangeability: Different algorithms or behaviors can be swapped in and out at runtime without modifying the client code.
+	3) Decoupling: The client code is decoupled from the specific implementations of the algorithms.
+	4) Flexibility: New strategies can be added without altering existing code.
+	
+Participants:
+	1) Strategy: An interface that defines the common method(s) for all algorithms.
+	2) ConcreteStrategy: Implements the strategy interface and provides specific algorithms.
+	3) Context: Maintains a reference to a strategy object and delegates the algorithm execution to the strategy.
+
+Real-Life Analogy:
+	Imagine a navigation app:
+		1) You can choose different strategies for route planning, such as "Shortest Path", "Fastest Route", or "Scenic Route".
+		2) The app allows you to switch between strategies without affecting its core functionality.
+		
+Example in Java: Payment System
+	Scenario: You want to build a payment system that supports multiple payment methods such as Credit Card, PayPal, and Bitcoin. The Strategy Pattern allows you to define different payment strategies and switch between them dynamically.
+	Step 1: Define the Strategy Interface
+		// Strategy Interface
+		public interface PaymentStrategy {
+			void pay(double amount);
+		}
+	Step 2: Create Concrete Strategies
+		// Concrete Strategy 1: Credit Card Payment
+		public class CreditCardPayment implements PaymentStrategy {
+			private String cardNumber;
+			public CreditCardPayment(String cardNumber) {
+				this.cardNumber = cardNumber;
+			}
+			@Override
+			public void pay(double amount) {
+				System.out.println("Paid " + amount + " using Credit Card: " + cardNumber);
+			}
+		}
+		// Concrete Strategy 2: PayPal Payment
+		public class PayPalPayment implements PaymentStrategy {
+			private String email;
+			public PayPalPayment(String email) {
+				this.email = email;
+			}
+			@Override
+			public void pay(double amount) {
+				System.out.println("Paid " + amount + " using PayPal: " + email);
+			}
+		}
+		// Concrete Strategy 3: Bitcoin Payment
+		public class BitcoinPayment implements PaymentStrategy {
+			private String walletAddress;
+			public BitcoinPayment(String walletAddress) {
+				this.walletAddress = walletAddress;
+			}
+			@Override
+			public void pay(double amount) {
+				System.out.println("Paid " + amount + " using Bitcoin Wallet: " + walletAddress);
+			}
+		}
+	Step 3: Create the Context Class
+		// Context Class
+		public class PaymentContext {
+			private PaymentStrategy paymentStrategy;
+			// Set the strategy at runtime
+			public void setPaymentStrategy(PaymentStrategy paymentStrategy) {
+				this.paymentStrategy = paymentStrategy;
+			}
+			// Execute the payment
+			public void executePayment(double amount) {
+				paymentStrategy.pay(amount);
+			}
+		}
+	Step 4: Client Code
+		public class Main {
+			public static void main(String[] args) {
+				// Create the context
+				PaymentContext paymentContext = new PaymentContext();
+				// Pay using Credit Card
+				paymentContext.setPaymentStrategy(new CreditCardPayment("1234-5678-9876-5432"));
+				paymentContext.executePayment(100.0); // Output: Paid 100.0 using Credit Card: 1234-5678-9876-5432
+				// Pay using PayPal
+				paymentContext.setPaymentStrategy(new PayPalPayment("user@example.com"));
+				paymentContext.executePayment(200.0); // Output: Paid 200.0 using PayPal: user@example.com
+				// Pay using Bitcoin
+				paymentContext.setPaymentStrategy(new BitcoinPayment("wallet12345"));
+				paymentContext.executePayment(300.0); // Output: Paid 300.0 using Bitcoin Wallet: wallet12345
+			}
+		}
+
+Advantages of Strategy Pattern:
+	1) Open/Closed Principle: Adding new strategies doesn’t require modifying existing code.
+	2) Flexibility: Algorithms can be changed dynamically at runtime.
+	3) Code Reusability: The strategies are reusable across different contexts.
+	4) Simplifies Complex Conditions: Eliminates long if-else or switch statements in the client code.
+
+Disadvantages:
+	1) Increased Number of Classes: Each strategy requires its own class, potentially increasing complexity.
+	2) Clients Must Be Aware of Strategies: The client needs to understand and manage the strategy selection process.
+	
+Real-World Use Cases:
+	1) Sorting Algorithms: Dynamically switch between different sorting strategies like quicksort, mergesort, etc.
+	2) Authentication Systems: Support multiple authentication strategies (e.g., OAuth, JWT, API Keys).
+	3) Game Development: Dynamically switch between AI behaviors or player control strategies.
+	
+==============================================================================================================================================================================
+
+3) Chain of Responsibility Design Pattern :
+-------------------------------------------
+	The Chain of Responsibility Design Pattern is a behavioral design pattern that allows multiple objects to process a request sequentially without tightly coupling the sender and receiver. Each object in the chain can decide either to handle the request or pass it to the next object in the chain. This pattern is especially useful for scenarios involving decision-making pipelines or filtering.
+
+Key Characteristics:
+	1) Decoupling: The sender of the request and the receivers (handlers) are decoupled.
+	2) Sequential Processing: Requests pass through a chain of handlers, each of which can handle or forward the request.
+	3) Flexibility: Handlers can be added or removed dynamically, and the chain order can be modified.
+	
+Participants:
+	1) Handler: Defines the interface for handling requests and includes a reference to the next handler in the chain.
+	2) ConcreteHandler: Implements the handler interface and either processes the request or forwards it to the next handler.
+	3) Client: Sends the request to the first handler in the chain.
+	
+Real-Life Analogy:
+	Imagine a customer service system:
+	1) A customer query is first handled by a chatbot.
+	2) If unresolved, the query is forwarded to a human agent.
+	3) If still unresolved, it is escalated to a manager. Each handler in the chain processes the query if it matches their scope or forwards it otherwise.
+	
+Example in Java: Request Filtering System
+	Scenario: You want to create a system where requests pass through a chain of filters (e.g., authentication, validation, and logging).
+	Step 1: Define the Handler Interface
+		public abstract class Handler {
+			protected Handler nextHandler;
+
+			// Method to set the next handler in the chain
+			public void setNextHandler(Handler nextHandler) {
+				this.nextHandler = nextHandler;
+			}
+
+			// Abstract method to process the request
+			public abstract void handleRequest(String request);
+		}
+	Step 2: Create Concrete Handlers
+		// Concrete Handler 1: Authentication
+		public class AuthenticationHandler extends Handler {
+			@Override
+			public void handleRequest(String request) {
+				if (request.contains("authenticated")) {
+					System.out.println("Authentication successful");
+					if (nextHandler != null) {
+						nextHandler.handleRequest(request); // Forward the request
+					}
+				} else {
+					System.out.println("Authentication failed");
+				}
+			}
+		}
+
+		// Concrete Handler 2: Validation
+		public class ValidationHandler extends Handler {
+			@Override
+			public void handleRequest(String request) {
+				if (request.contains("valid")) {
+					System.out.println("Validation successful");
+					if (nextHandler != null) {
+						nextHandler.handleRequest(request); // Forward the request
+					}
+				} else {
+					System.out.println("Validation failed");
+				}
+			}
+		}
+
+		// Concrete Handler 3: Logging
+		public class LoggingHandler extends Handler {
+			@Override
+			public void handleRequest(String request) {
+				System.out.println("Logging request: " + request);
+				if (nextHandler != null) {
+					nextHandler.handleRequest(request); // Forward the request
+				}
+			}
+		}
+	Step 3: Client Code
+		public class Main {
+			public static void main(String[] args) {
+				// Create handlers
+				Handler authenticationHandler = new AuthenticationHandler();
+				Handler validationHandler = new ValidationHandler();
+				Handler loggingHandler = new LoggingHandler();
+
+				// Build the chain: Authentication -> Validation -> Logging
+				authenticationHandler.setNextHandler(validationHandler);
+				validationHandler.setNextHandler(loggingHandler);
+
+				// Process requests through the chain
+				System.out.println("Processing valid authenticated request:");
+				authenticationHandler.handleRequest("authenticated valid request");
+
+				System.out.println("\nProcessing invalid request:");
+				authenticationHandler.handleRequest("invalid request");
+			}
+		}
+		
+Advantages of Chain of Responsibility:
+	1) Flexibility: Handlers can be added, removed, or reordered dynamically.
+	2) Decoupled Architecture: Sender and receiver do not depend on each other directly.
+	3) Reusability: Handlers are reusable across different chains.
+
+Disadvantages:
+	1) Debugging Complexity: Debugging can be challenging due to the sequential nature of the chain.
+	2) Performance Overhead: Large chains can introduce latency.
+	
+Real-World Use Cases:
+	1) UI Event Handling: Passing user input events through a chain of widgets in a graphical user interface.
+	2) Request Filtering: Authentication, validation, and logging in web applications.
+	3) Approval Processes: Sequential approval workflows in business systems.	
+	
+===========================================================================================================================================================================

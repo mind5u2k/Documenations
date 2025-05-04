@@ -1,0 +1,72 @@
+React Hooks :
+-------------
+	React Hooks are a feature introduced in React 16.8 that allow you to use state and other React features without writing a class. They are functions that let you "hook into" React state and lifecycle features from functional components. Hooks simplify component logic and enable you to reuse stateful behavior across components.
+	
+	Why React Hooks Are Useful : Before Hooks, stateful components in React could only be implemented using class components. Hooks provide a cleaner, more intuitive way to manage state and side effects in functional components. They enable better code reusability, readability, and organization.
+	
+	Types of React Hooks :
+	Here are all the commonly used React Hooks, explained with examples:
+	
+	1. useState : The useState Hook is one of the most commonly used Hooks in React, introduced in version 16.8. It allows you to add state to functional components. State is a way to preserve and manage data across re-renders of a component. With useState, you can create and update state variables dynamically.
+		How useState Works:
+			1) Initialization: It initializes state variables with a default value.
+			2) State Management: It provides two things:
+				- The current state value.
+				- A function to update the state.
+			Syntax:
+				const [state, setState] = useState(initialState);
+					- state: The current state value.
+					- setState: A function used to update the state.
+					- initialState: The default value of the state when the component renders for the first time.
+
+			Example: Here’s a practical example to show the power of useState:
+					import React, { useState } from 'react';
+					function Counter() {
+					  // Step 1: Declare state with useState
+					  const [count, setCount] = useState(0); // Initial state is set to 0
+					  // Step 2: Event handler to update state
+					  const increment = () => {
+						setCount(prevCount => prevCount + 1); // Updates count based on previous value
+					  };
+					  const decrement = () => {
+						setCount(prevCount => Math.max(prevCount - 1, 0)); // Ensures count doesn't go below 0
+					  };
+					  const reset = () => {
+						setCount(0); // Resets count to 0
+					  };
+
+					  return (
+						<div>
+						  <h1>Counter</h1>
+						  <p>Current Count: {count}</p>
+						  <button onClick={increment}>Increment</button>
+						  <button onClick={decrement}>Decrement</button>
+						  <button onClick={reset}>Reset</button>
+						</div>
+					  );
+					}
+
+					export default Counter;
+					
+				What Happens in This Example
+					1) State Declaration:
+						- The useState Hook initializes the count state with a value of 0.
+					2) State Update:
+						- The increment and decrement functions use setCount to update the state based on user interactions.
+						- The reset function simply resets the state back to 0.
+					3) Preservation of State:
+						- The value of count persists between renders, ensuring the application stays consistent.
+			Benefits of useState
+				- Simpler Syntax: Avoids the complexity of class components.
+				- Dynamic Behavior: Enables real-time updates to the UI.
+				- Isolation of State: Keeps state logic encapsulated within the component.
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	2. useEffect : The useEffect Hook is one of the most powerful and essential hooks in React. It allows you to perform side effects in functional components, such as data fetching, subscriptions, manual DOM manipulations, or timers. Essentially, useEffect lets your component interact with the outside world.
+	3. useContext
+	4. useReducer
+	5. useCallback
+	6. useMemo
+	7. useRef
+	8. useImperativeHandle
+	9. useLayoutEffect
+	10. useDebugValue

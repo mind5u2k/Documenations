@@ -1,0 +1,52 @@
+1) Product Service : Create and View products, acts as Product Catalog.
+	Dependency : 
+		a) Lombok
+		b) Spring Web
+		c) Spring Data MongoDB
+		d) Testcontainers
+2) Order Service : Can order products.
+3) Inventory Service : Can check if product is in stock or not.
+4) Notification Service : Can send notifications, after order is placed.
+5) Order Service, Inventory Service and Notification service are going to interact with each other.
+6) Synchronous and Asynchronous communication.
+
+
+=================================================================
+API Gateway
+1) Acts as an entry point for the requests.
+2) Forward the requests to the downstream microservices
+3) Commonly used in the distributed systems and microservices architecture.
+
+Spring cloud Gateway:
+This project provides a libraries for building an API Gateway on top of Spring WebFlux or Spring WebMVC.
+Spring Cloud Gateway aims to provide a simple, yet effective way to route to APIs and provide cross cutting concerns to them such as: security, monitoring/metrics and resiliency.
+
+Spring cloud Gateway features:
+1) Build on Spring Framework and Spring Boot.
+2) Able to match routes on any request attribute.
+3) Predicates and filters are specific to routes.
+4) Circuit Breaker integration
+5) Spring Cloud DiscoveryClient integration
+6) Easy to write Predicates and filters
+7) Request Rate Limiting
+8) Path Rewriting
+
+Benifits of using API Gateway
+	 nhgt6ghvb Handles cross-cutting concers like
+	- Security
+	- Monitoring
+	- Rate Limiting
+	- SSL Termination
+Drawbacks of using API Gateway
+	- Increases complexity as we have to maintain yet another component in our system landscape.
+	- Needs a lot of effor to maintain it as it will be a single point of failure - need to run multiple instances.
+	- Increased latency for the client requests.
+	
+=================================================================
+Security using Keylock
+=================================================================
+Document REST API with Open API
+	springdoc-openapi java library helps to automate the generation of API documentation using spring boot projects, springdoc-openapi works by examining an application at runtime 
+	to infer API semantics based on spring configurations, class structures and various annotaions.
+	Automatically generates documentation in JAON/YAML and HTML format APIs. This documentation can be completed by comments using swagger-api annotations.
+	

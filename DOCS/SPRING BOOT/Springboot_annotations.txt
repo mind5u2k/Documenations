@@ -1,0 +1,124 @@
+@Qualifier Annotation : 
+-----------------------
+	* The @Qualifier annotation in Spring is used to resolve ambiguity when multiple beans of the same type exist in the application context. It helps specify which bean should be injected when using @Autowired.
+	
+	*Why Use @Qualifier?
+		When multiple implementations of an interface exist, Spring may not know which one to inject. The @Qualifier annotation allows us to explicitly define which bean should be used.
+		
+	* Example Usage:
+		- Consider an interface MessageService with multiple implementations:
+			public interface MessageService {
+				void sendMsg(String message);
+			}
+		-Implementations
+			@Component("emailService")
+			public class EmailService implements MessageService {
+				public void sendMsg(String message) {
+					System.out.println("Email: " + message);
+				}
+			}
+
+			@Component("smsService")
+			public class SMSService implements MessageService {
+				public void sendMsg(String message) {
+					System.out.println("SMS: " + message);
+				}
+			}
+		-Using @Qualifier in a Service
+			@Component
+			public class MessageProcessor {				
+				private final MessageService messageService;
+				@Autowired
+				public MessageProcessor(@Qualifier("smsService") MessageService messageService) {
+					this.messageService = messageService;
+				}
+				public void processMsg(String message) {
+					messageService.sendMsg(message);
+				}
+			}
+	* How It Works
+		- The @Autowired annotation injects a MessageService bean.
+		- The @Qualifier("smsService") ensures that the SMSService bean is used instead of EmailService.
+	
+	* This approach prevents ambiguity and ensures the correct bean is injected.
+====================================================================================================================================================================================
+
+@Component and @Bean in Spring :
+	* Both @Component and @Bean are used to define beans in the Spring framework, but they serve different purposes.
+	
+	1) @Component Annotation : The @Component annotation is used to mark a class as a Spring-managed bean. Spring automatically detects and registers it in the application context during component scanning.
+		
+		Example: Using @Component
+			@Component
+			public class UserService {
+				public String getUser() {
+					return "John Doe";
+				}
+			}
+			- Here, UserService is automatically registered as a Spring bean.
+			- Spring scans the package and adds it to the application context.
+		
+		Specialized @Component Annotations :
+			Spring provides specialized annotations that extend @Component:
+			- @Service → Used for service layer components.
+			- @Repository → Used for DAO (Data Access Object) components.
+			- @Controller → Used for Spring MVC controllers.
+			
+	2) @Bean Annotation : The @Bean annotation is used inside a @Configuration class to manually define a bean.
+	
+		Example: Using @Bean
+			@Configuration
+			public class AppConfig {
+				@Bean
+				public UserService userService() {
+					return new UserService();
+				}
+			}
+			- Here, UserService is manually registered as a bean.
+			- The method userService() returns an instance of UserService, which Spring adds to the application context.
+			
+	Key Differences
+	+-------------------+-------------------------------------------+-----------------------------------------------------------+
+	| Feature			| @Component								| @Bean														|
+	+-------------------+-------------------------------------------+-----------------------------------------------------------+
+	| Detection			| Automatic (via component scanning)		| Manual (explicit bean definition)							|
+	| Usage				| Applied at the class level				| Applied at the method level inside @Configuration			|
+	| Flexibility		| Requires the class to be annotated		| Can define beans for third-party classes					|
+	+-------------------+-------------------------------------------+-----------------------------------------------------------+
+	
+	When to Use Which?
+		1) Use @Bean:
+			- For third-party library classes.
+			- When you need fine-grained control over bean creation.
+			- For complex initialization or custom configurations.
+		2) Use @Component:
+			- For your own classes (e.g., Service, Repository, or Controller layers).
+			- When you want Spring to automatically detect and manage the bean.
+====================================================================================================================================================================================
+
+
+@SpringBootApplication
+One of the most basic and helpful annotations, is @SpringBootApplication. It's syntactic sugar for combining other annotations that we'll look at in just a moment. @SpringBootApplication is @Configuration, @EnableAutoConfiguration and @ComponentScan annotations combined, configured with their default attributes.
+
+@Configuration and @ComponentScan
+The @Configuration and @ComponentScan annotations that we described above make Spring create and configure the beans and components of your application. It's a great way to decouple the actual business logic code from wiring the app together.
+
+@EnableAutoConfiguration
+Now the @EnableAutoConfiguration annotation is even better. It makes Spring guess the configuration based on the JAR files available on the classpath. It can figure out what libraries you use and preconfigure their components without you lifting a finger. It is how all the spring-boot-starter libraries work. Meaning it's a major lifesaver both when you're just starting to work with a library as well as when you know and trust the default config to be reasonable.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Important Spring MVC Web Annotations
+
+The following annotations make Spring configure your app to be a web application, capable of serving the HTTP response.
+
+@Controller - marks the class as a web controller, capable of handling the HTTP requests. Spring will look at the methods of the class marked with the @Controller annotation and establish the routing table to know which methods serve which endpoints.
+
+@ResponseBody - The @ResponseBody is a utility annotation that makes Spring bind a method's return value to the HTTP response body. When building a JSON endpoint, this is an amazing way to magically convert your objects into JSON for easier consumption.
+
+@RestController - Then there's the @RestController annotation, a convenience syntax for @Controller and @ResponseBody together. This means that all the action methods in the marked class will return the JSON response.
+
+@RequestMapping(method = RequestMethod.GET, value = "/path") - The @RequestMapping(method = RequestMethod.GET, value = "/path") annotation specifies a method in the controller that should be responsible for serving the HTTP request to the given path. Spring will work the implementation details of how it's done. You simply specify the path value on the annotation and Spring will route the requests into the correct action methods.
+
+@RequestParam(value="name", defaultValue="World") - Naturally, the methods handling the requests might take parameters. To help you with binding the HTTP parameters into the action method arguments, you can use the @RequestParam(value="name", defaultValue="World") annotation. Spring will parse the request parameters and put the appropriate ones into your method arguments.
+
+@PathVariable("placeholderName") - Another common way to provide information to the backend is to encode it in the URL. Then you can use the @PathVariable("placeholderName") annotation to bring the values from the URL to the method arguments.

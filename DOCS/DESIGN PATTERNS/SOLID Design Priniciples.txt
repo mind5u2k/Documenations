@@ -1,0 +1,373 @@
+1) Single Responisibility Principle
+2) Open Closed Principle
+3) Liskov Substitution Principle
+4) Interface Segregation Principle
+5) Dependency Inversion Principle
+
+1) Single Responisibility Principle
+The Single Responsibility Principle (SRP) is one of the core principles of software design, stating that a class should have only one reason to change. In other words, a class should only have one responsibility. This principle ensures that code remains modular, maintainable, and easier to understand.
+
+Here’s a simple example in Java to illustrate SRP:
+
+Before applying SRP:
+class Employee {
+    public void calculateSalary() {
+        // Logic for salary calculation
+    }
+
+    public void saveToDatabase() {
+        // Logic for saving employee details to the database
+    }
+
+    public void generateReport() {
+        // Logic for generating employee report
+    }
+}
+In this case, the Employee class violates the SRP because it handles multiple responsibilities:
+Salary calculation.
+Database operations.
+Report generation.
+
+After applying SRP:
+You can split the responsibilities into separate classes:
+class Employee {
+    // Employee properties like name, id, etc.
+}
+
+class SalaryCalculator {
+    public void calculateSalary(Employee employee) {
+        // Logic for salary calculation
+    }
+}
+
+class EmployeeRepository {
+    public void saveToDatabase(Employee employee) {
+        // Logic for saving employee details to the database
+    }
+}
+
+class ReportGenerator {
+    public void generateReport(Employee employee) {
+        // Logic for generating employee report
+    }
+}
+Now, each class has a single responsibility:
+SalaryCalculator is responsible for salary calculation.
+EmployeeRepository handles database operations.
+ReportGenerator generates reports.
+By following SRP, you make the codebase more modular, easier to test, and less prone to bugs when changes are made.
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+2) Open Closed Principle
+The Open/Closed Principle (OCP) is another fundamental principle in software design. It states that a class should be open for extension but closed for modification. This ensures that you can add new functionality to a class without altering its existing code, which helps maintain stability and avoid unintended side effects.
+
+Here’s a simple example in Java:
+
+Before applying OCP:
+Suppose we have a class that calculates the area of different shapes. If we want to add a new shape (e.g., Triangle), we have to modify the existing AreaCalculator class, violating OCP.
+class AreaCalculator {
+    public double calculateCircleArea(double radius) {
+        return Math.PI * radius * radius;
+    }
+
+    public double calculateRectangleArea(double length, double width) {
+        return length * width;
+    }
+}
+If we need to add the area calculation for a triangle, we'd have to modify this class, which could introduce bugs and break existing functionality.
+
+After applying OCP:
+By using abstraction, we can make the class open for extension but closed for modification.
+interface Shape {
+    double calculateArea();
+}
+
+class Circle implements Shape {
+    private double radius;
+
+    public Circle(double radius) {
+        this.radius = radius;
+    }
+
+    @Override
+    public double calculateArea() {
+        return Math.PI * radius * radius;
+    }
+}
+
+class Rectangle implements Shape {
+    private double length;
+    private double width;
+
+    public Rectangle(double length, double width) {
+        this.length = length;
+        this.width = width;
+    }
+
+    @Override
+    public double calculateArea() {
+        return length * width;
+    }
+}
+
+class Triangle implements Shape {
+    private double base;
+    private double height;
+
+    public Triangle(double base, double height) {
+        this.base = base;
+        this.height = height;
+    }
+
+    @Override
+    public double calculateArea() {
+        return (base * height) / 2;
+    }
+}
+
+class AreaCalculator {
+    public double calculateTotalArea(Shape[] shapes) {
+        double totalArea = 0;
+        for (Shape shape : shapes) {
+            totalArea += shape.calculateArea();
+        }
+        return totalArea;
+    }
+}
+Now, if we want to add new shapes like Triangle, we simply create a new class implementing the Shape interface without modifying the AreaCalculator class. This adheres to OCP by allowing extension without altering the core logic.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+3) Liskov Substitution Principle
+The Liskov Substitution Principle (LSP) states that objects of a superclass should be replaceable with objects of a subclass without altering the correctness of the program. Essentially, if a class S is a subclass of class T, then objects of T can be substituted with objects of S without any issues.
+
+A violation of LSP occurs when the subclass changes the behavior of the superclass in a way that breaks its expected functionality.
+
+Example of LSP Violation:
+Imagine we have a class hierarchy for rectangles and squares:
+class Rectangle {
+    protected double length;
+    protected double width;
+
+    public void setLength(double length) {
+        this.length = length;
+    }
+
+    public void setWidth(double width) {
+        this.width = width;
+    }
+
+    public double getArea() {
+        return length * width;
+    }
+}
+
+class Square extends Rectangle {
+    @Override
+    public void setLength(double length) {
+        this.length = length;
+        this.width = length; // Ensures square dimensions remain consistent
+    }
+
+    @Override
+    public void setWidth(double width) {
+        this.width = width;
+        this.length = width; // Ensures square dimensions remain consistent
+    }
+}
+Here, the Square class inherits from Rectangle, but it overrides the setters (setLength and setWidth) to ensure its sides remain equal. While this might seem logical, it violates LSP because Square objects will behave differently than Rectangle objects in the context of the superclass.
+
+The Problem:
+Suppose we write a method that expects a Rectangle object and performs certain operations:
+public void resizeRectangle(Rectangle rectangle) {
+    rectangle.setLength(5);
+    rectangle.setWidth(10);
+    System.out.println("Area: " + rectangle.getArea());
+}
+If we pass a Square object to this method:
+Rectangle square = new Square();
+resizeRectangle(square);
+The method will fail to work as intended because setting the length and width independently is not possible for a Square. The behavior of the Square class violates the expectations of the Rectangle class, breaking LSP.
+
+Correct Approach:
+Instead of inheriting, use composition to model the relationship between rectangles and squares:
+
+class Square {
+    private double side;
+
+    public void setSide(double side) {
+        this.side = side;
+    }
+
+    public double getArea() {
+        return side * side;
+    }
+}
+This way, Square does not inherit from Rectangle, and their behaviors remain independent. You can maintain LSP by ensuring subclasses don't alter the expected behavior of their superclass.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+4) Interface Segregation Principle
+The Interface Segregation Principle (ISP) states that a class should not be forced to implement interfaces it does not use. This principle ensures that interfaces are small and focused, so classes only implement methods that are relevant to them. In essence, it's about creating specialized interfaces rather than a large, all-encompassing one.
+
+Here's a simple example in Java to illustrate this:
+
+Before applying ISP:
+Suppose you have a single interface for workers:
+interface Worker {
+    void work();
+    void eat();
+}
+
+Now, let’s say you have two types of workers:
+Regular workers who both work and eat.
+Robots that only work and do not eat.
+
+If Robot implements this interface, it will be forced to provide an implementation for the eat() method, even though it doesn’t need it.
+class RegularWorker implements Worker {
+    @Override
+    public void work() {
+        System.out.println("Working...");
+    }
+
+    @Override
+    public void eat() {
+        System.out.println("Eating...");
+    }
+}
+
+class Robot implements Worker {
+    @Override
+    public void work() {
+        System.out.println("Working...");
+    }
+
+    @Override
+    public void eat() {
+        // Not applicable to robots
+        throw new UnsupportedOperationException("Robots do not eat");
+    }
+}
+Here, the Robot class violates ISP because it is forced to implement a method (eat()) that does not make sense for it.
+
+After applying ISP:
+To fix this, we can segregate the interfaces:
+
+interface Workable {
+    void work();
+}
+
+interface Eatable {
+    void eat();
+}
+Now, RegularWorker implements both interfaces, while Robot implements only the Workable interface:
+class RegularWorker implements Workable, Eatable {
+    @Override
+    public void work() {
+        System.out.println("Working...");
+    }
+
+    @Override
+    public void eat() {
+        System.out.println("Eating...");
+    }
+}
+
+class Robot implements Workable {
+    @Override
+    public void work() {
+        System.out.println("Working...");
+    }
+}
+Benefits of applying ISP:
+Flexibility: Classes implement only what they need.
+
+Maintainability: Small, focused interfaces are easier to understand and modify.
+
+Avoids Empty Implementations: No need to write unnecessary or unsupported code like throw new UnsupportedOperationException.
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+5) Dependency Inversion Principle
+The Dependency Inversion Principle (DIP) is the "D" in SOLID principles. It states that high-level modules should not depend on low-level modules; both should depend on abstractions. Additionally, abstractions should not depend on details; details should depend on abstractions. This principle ensures that your code is flexible, scalable, and decoupled.
+
+Here’s a Java example to demonstrate DIP:
+
+Before applying DIP:
+Suppose we have a high-level class PaymentProcessor that directly depends on a low-level class CreditCardPayment.
+class CreditCardPayment {
+    public void makePayment() {
+        System.out.println("Payment made using Credit Card");
+    }
+}
+
+class PaymentProcessor {
+    private CreditCardPayment payment;
+
+    public PaymentProcessor() {
+        this.payment = new CreditCardPayment(); // Direct dependency on a low-level class
+    }
+
+    public void processPayment() {
+        payment.makePayment();
+    }
+}
+The problem here is that PaymentProcessor is tightly coupled to CreditCardPayment. If we want to add another payment method, such as PayPalPayment, we would need to modify the PaymentProcessor class, which violates the Dependency Inversion Principle.
+
+After applying DIP:
+To fix this, we introduce an abstraction (interface) for payment methods. Both the high-level class and low-level classes depend on this abstraction.
+
+// Abstraction
+interface Payment {
+    void makePayment();
+}
+
+// Low-level classes
+class CreditCardPayment implements Payment {
+    @Override
+    public void makePayment() {
+        System.out.println("Payment made using Credit Card");
+    }
+}
+
+class PayPalPayment implements Payment {
+    @Override
+    public void makePayment() {
+        System.out.println("Payment made using PayPal");
+    }
+}
+
+// High-level class
+class PaymentProcessor {
+    private Payment payment;
+
+    public PaymentProcessor(Payment payment) {
+        this.payment = payment; // Depends on the abstraction, not a concrete class
+    }
+
+    public void processPayment() {
+        payment.makePayment();
+    }
+}
+Now, both PaymentProcessor (high-level module) and the payment methods like CreditCardPayment or PayPalPayment (low-level modules) depend on the abstraction (Payment). If we add a new payment method, such as BitcoinPayment, no changes are required in the PaymentProcessor class.
+
+class BitcoinPayment implements Payment {
+    @Override
+    public void makePayment() {
+        System.out.println("Payment made using Bitcoin");
+    }
+}
+
+// Usage
+Payment paymentMethod = new BitcoinPayment(); // Dependency injection
+PaymentProcessor processor = new PaymentProcessor(paymentMethod);
+processor.processPayment();
+
+Benefits of Applying DIP:
+Decoupling: High-level modules are no longer tightly coupled to low-level modules.
+
+Flexibility: Adding new functionalities (e.g., new payment methods) becomes easier.
+
+Testability: You can easily mock dependencies for unit testing.
+=============================================================================================================================================

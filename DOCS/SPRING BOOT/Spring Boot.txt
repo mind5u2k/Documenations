@@ -1,0 +1,357 @@
+Workflow of sprint boot application: 
+------------------------------------
+	Spring Boot applications are widely used for their simplicity and efficiency in creating microservices and enterprise applications. Below is a detailed workflow to help you understand its lifecycle, components, and how it operates:
+
+	Workflow of a Spring Boot Application:
+	1. Development Phase
+		* Project Setup:
+			- A Spring Boot project is typically initialized using tools like Spring Initializr. It generates a boilerplate codebase with Maven/Gradle dependencies and starter packs for common functionality like web services, security, and data access.
+			- You select the required dependencies like Spring Web, Spring Data JPA, Spring Security, etc.
+		* Application Configuration:
+			- Spring Boot leverages application.properties or application.yml files to centralize configuration. For instance, database connection settings, server port, or logging levels are defined here.
+		* Component Creation: You create the core components:
+			- Controllers: Define endpoints (using @RestController or @Controller) for handling HTTP requests and responses.
+			- Services: Business logic layer where computations and transformations happen.
+			- Repositories: Interfaces to interact with the database using JPA or other persistence frameworks.
+	2. Build Phase
+		* The application is compiled, packaged into a JAR (Java ARchive) file using Maven/Gradle, and made ready for deployment.
+	3. Startup Phase
+		* Embedded Server Initialization:
+			- Spring Boot applications use embedded servers like Tomcat or Jetty, eliminating the need to install external application servers. When the application starts (java -jar app.jar), Spring Boot initializes the server automatically.
+		* Spring Context Loading:
+			- During startup, Spring Boot scans for all annotated components (@Component, @Service, @Repository, @Controller, etc.) and registers them in the Spring ApplicationContext.
+			- Dependency Injection (DI) ensures that beans are instantiated and injected where needed.
+		* Configuration Properties Binding:
+			- Configuration values from application.properties or environment variables are loaded and mapped to fields in @ConfigurationProperties or @Value annotations.
+	4. Execution Phase
+		* Request Handling:
+			- Incoming HTTP requests hit the DispatcherServlet, the central point for routing and processing web requests.
+			- The DispatcherServlet consults the Handler Mapping to determine which controller method corresponds to the request's URI and HTTP method.
+		* Controller Logic Execution:
+			- The relevant controller method executes, calling services and repositories to fulfill the business logic.
+			- For database operations, repositories use JPA or other persistence APIs to fetch/store data.
+			- The result is returned as a model object or JSON/XML, depending on the application design.
+		* Response Generation:
+			- After processing, the controller sends the response to the client via the DispatcherServlet.
+	5. Monitoring and Maintenance Phase
+		* Error Handling:
+			- Spring Boot provides robust exception handling mechanisms (@ControllerAdvice) to customize error responses.
+		* Actuator Monitoring:
+			- Spring Boot Actuator enables monitoring production systems by exposing endpoints to view metrics, health checks, and environment properties.
+		* Logging:
+			- Logs are generated and maintained using SLF4J or Logback, providing insights into application execution.
+	6. Shutdown Phase
+		* When the application shuts down, Spring Context is gracefully terminated, releasing resources like database connections.
+		
+	Workflow Summary : A high-level diagram of how data flows through a Spring Boot application could be visualized as follows:
+		1) Request -> DispatcherServlet -> Controller -> Service -> Repository -> Database
+		2) Response <- Controller <- Service <- Repository	
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Dependency Injection (DI) and Inversion of Control (loC) :
+----------------------------------------------------------
+	* Dependency Injection (DI) and Inversion of Control (IoC) are two closely related concepts, especially prevalent in object-oriented programming and widely used in frameworks like Spring in Java. Let me break them down for you, along with an example to illustrate their usage.
+	
+	1. Inversion of Control (IoC) : 
+		* Inversion of Control (IoC) is a software design principle that shifts the responsibility for controlling the flow of a program and managing dependencies from the application code itself to a framework or container. 
+		* This "inversion" makes the application less coupled and more modular, improving maintainability and flexibility.
+		* Detailed Explanation of IoC : In traditional programming, the application code decides:
+			- Which objects to create.
+			- How they interact with each other.
+			- How dependencies are managed.
+			IoC reverses this control. Instead of application code handling these aspects, a container (e.g., Spring IoC container) takes charge of creating objects, managing dependencies, and injecting them into the appropriate places within the application.
+			This principle underpins modern frameworks like Spring, which uses IoC to make applications more modular, flexible, and testable.
+	
+	2. Dependency Injection (DI) :
+		* Dependency Injection (DI) is a design pattern used in software engineering to achieve loose coupling between components and improve code maintainability. It allows an object to receive its dependencies from an external source, instead of creating them itself. This promotes modularity and makes code easier to test and extend.
+		
+		* Types of Dependency Injection
+			1) Constructor Injection: Dependencies are provided through the object's constructor.
+			2) Setter Injection: Dependencies are set through public setter methods.
+			3) Interface Injection: Dependencies are injected via an interface that the object implements.
+		
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Bean lifecycle and scopes :
+---------------------------
+	* In the Spring Framework, beans are the building blocks of an application. A bean is an object managed by the Spring IoC (Inversion of Control) container. Understanding the lifecycle and scopes of beans is crucial for building effective, maintainable, and scalable applications.
+	
+	* Bean Lifecycle - The lifecycle of a Spring bean involves a series of steps, from its creation to its destruction. Here's a breakdown of the bean lifecycle:
+		1) Instantiation: The Spring container creates the instance of the bean (e.g., via new or factory methods).
+		2) Populating Properties: The container injects dependencies, such as values or collaborating beans, into the bean.
+		3) Bean Initialization: If you define custom initialization logic, the container executes it. This can be achieved using @PostConstruct or init-method.
+		4) Ready for Use: The bean is fully initialized and ready to serve requests.
+		5) Destruction: Before the container removes the bean, it performs cleanup using any custom destruction logic defined (e.g., @PreDestroy or destroy-method).
+		
+		Example: Bean Lifecycle
+			import javax.annotation.PostConstruct;
+			import javax.annotation.PreDestroy;
+
+			public class MyBean {
+
+				// Constructor
+				public MyBean() {
+					System.out.println("Bean is instantiated");
+				}
+
+				// Custom initialization method
+				@PostConstruct
+				public void init() {
+					System.out.println("Bean is initialized");
+				}
+
+				// Method to use the bean
+				public void performTask() {
+					System.out.println("Task is performed");
+				}
+
+				// Custom destruction method
+				@PreDestroy
+				public void destroy() {
+					System.out.println("Bean is destroyed");
+				}
+			}
+			
+		Configuring the Bean : You can configure the bean in a Spring application using annotations or XML:
+			import org.springframework.context.annotation.*;
+
+			@Configuration
+			public class AppConfig {
+
+				@Bean
+				public MyBean myBean() {
+					return new MyBean();
+				}
+			}
+			When the Spring container starts, you'll see logs for the instantiation, initialization, and destruction phases.
+		
+		Key Points :
+			1) Initialization Methods:
+				- @PostConstruct: Specifies custom initialization logic.
+				- init-method: Defined in XML or configuration classes for non-annotation-based initialization.
+			2) Destruction Methods:	
+				- @PreDestroy: Executes cleanup before the bean is removed.
+				- destroy-method: Similar to init-method, but for destruction.
+			3) Managing Lifecycle in Singleton Scope:
+				- For singleton beans, the lifecycle is managed globally, starting at application startup and ending at shutdown.
+			4) Prototype Scope:
+				- Prototype beans follow the lifecycle only up to initialization. The destruction phase is not managed by the container.
+			
+	* Bean Scopes - Bean scopes define the lifecycle and visibility of a bean within a Spring application context. There are five major scopes in Spring:
+		1) Singleton (Default):
+			- A single instance of the bean is created and shared across the application context.
+			- Best for stateless beans.
+		2) Prototype:
+			- A new instance of the bean is created each time it is requested.
+			- Useful for stateful beans or when unique instances are needed.
+		3) Request (Web Application Scope):
+			- A new bean instance is created for every HTTP request.
+			- Used in web applications.
+		4) Session (Web Application Scope):
+			- A new bean instance is created for every HTTP session.
+			- Useful for storing session-specific data.
+		5) Application (Web Application Scope):
+			- A single instance is created for the lifecycle of the ServletContext.
+			- Similar to singleton but specific to web applications.
+		
+		Example: Singleton and Prototype Scopes
+			import org.springframework.context.annotation.*;
+
+			@Component
+			@Scope("singleton") // Default scope
+			public class SingletonBean {
+				public SingletonBean() {
+					System.out.println("SingletonBean instance created");
+				}
+			}
+
+			@Component
+			@Scope("prototype")
+			public class PrototypeBean {
+				public PrototypeBean() {
+					System.out.println("PrototypeBean instance created");
+				}
+			}
+
+			@Configuration
+			@ComponentScan("com.example")
+			public class AppConfig {}
+
+			public class Main {
+				public static void main(String[] args) {
+					AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+
+					// Singleton scope
+					SingletonBean sb1 = context.getBean(SingletonBean.class);
+					SingletonBean sb2 = context.getBean(SingletonBean.class);
+					System.out.println("Are SingletonBean instances equal? " + (sb1 == sb2)); // True
+
+					// Prototype scope
+					PrototypeBean pb1 = context.getBean(PrototypeBean.class);
+					PrototypeBean pb2 = context.getBean(PrototypeBean.class);
+					System.out.println("Are PrototypeBean instances equal? " + (pb1 == pb2)); // False
+
+					context.close();
+				}
+			}
+		
+		Choosing the Right Scope
+			- Use Singleton for stateless and shared resources (e.g., services or repositories).
+			- Use Prototype for stateful or non-shared components.
+			- Use Request, Session, or Application for web-specific use cases.
+			
+ 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+What is Spring Boot, and how does it differ from the Spring Framework?
+-----------------------------------------------------------------------
+	1) Spring - Spring is an open-source lightweight framework that allows Java developers to build simple, reliable, and scalable enterprise applications.
+	This framework mainly focuses on providing various ways to help you manage your business objects. It made the development of Web applications much easier compared to classic Java frameworks and Application Programming Interfaces (APIs), such as Java database connectivity (JDBC), JavaServer Pages (JSP), and Java Servlet. This framework uses various new techniques such as Aspect-Oriented Programming (AOP), Plain Old Java Object (POJO), and dependency injection (DI), to develop enterprise applications. The Spring framework can be considered as a collection of sub-frameworks, also called layers, such as Spring AOP. Spring Object-Relational Mapping (Spring ORM). Spring Web Flow, and Spring Web MVC. You can use any of these modules separately while constructing a Web application.  The modules may also be grouped to provide better functionalities in a Web application. 
+
+	1) Spring Boot - Spring Boot is built on top of the conventional spring framework. So, it provides all the features of spring and is easier to use than spring. Spring Boot is a microservice-based framework and makes a production-ready application in very less time. In Spring Boot everything is auto configured. We just need to use proper configuration for utilizing a particular functionality. Spring Boot is very useful if we want to develop REST API.
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
+
+What are the advantages of using Spring Boot?
+---------------------------------------------
+	Spring Boot is a Java framework that can help you create applications faster and more efficiently. It can reduce boilerplate code, simplify dependency management, and more. 
+	1) Advantages
+		* Less boilerplate code: Spring Boot provides defaults and abstractions, so you can focus on business logic. 
+		* Embedded servers: You don't need to preinstall web servers like Tomcat, Jetty, or Undertow. 
+		* No XML configuration: You can use annotations instead of XML configurations.
+		* Dependency management: Spring Boot packages third-party dependencies into starter packages.
+		* Microservices architecture: Spring Boot simplifies building, testing, deploying, and monitoring microservices. 
+		* Easy to launch: Spring Boot applications are self-contained and ready for production. 
+		* Community assistance: You can connect with other developers for help. 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ 
+What is the purpose of the @SpringBootApplication annotation ?
+--------------------------------------------------------------
+	The @SpringBootApplication annotation is used to mark a configuration class in a Spring Boot application. It enables auto-configuration, component scanning, and the registration of extra beans. 
+	Benefits Simplifies the setup and development process, Reduces repetitive code, Allows developers to focus on writing business logic, and Encourages best practices. 
+		How it works
+			- The annotation is applied to the main class of the application 
+			- It's equivalent to declaring @Configuration, @EnableAutoConfiguration, and @ComponentScan with their default attributes 
+			- It enables Spring Boot's auto-configuration mechanism 
+			- It enables @Component scan on the package where the application is located 
+			- It allows the registration of extra beans in the context or the import of additional configuration classes 
+		Why it's important
+			The annotation is a cornerstone of Spring Boot development and is effectively mandatory for Spring Boot applications. 
+		Related annotations
+			@SpringBootConfiguration: An alternative to the Spring's standard @Configuration annotation 
+			@EnableAutoConfiguration: Used specifically to enable the auto-configuration feature of Spring Boot 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+6) What is an embedded server in Spring Boot? Which servers are supported?
+
+	- In Spring Boot, an "embedded server" is a web server that is packaged directly within your application, meaning you don't need to deploy it separately on a dedicated server.
+	- it runs as part of your application itself; the most commonly supported embedded servers in Spring Boot are Tomcat, Jetty, and Undertow with Tomcat being the default choice. 
+	* Key points about embedded servers in Spring Boot:
+		1) Simplified deployment: Since the server is part of your application, you can deploy your Spring Boot app as a single executable JAR file, making deployment much easier. 
+		2) Flexibility in choice: You can choose which embedded server to use based on your project needs by adding the relevant dependency to your project. 
+		3) No external server required: Unlike traditional deployments where you would need to install and configure a separate web server like Tomcat, with an embedded server, everything is self-contained within your  application.   
+		
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+What is the role of CommandLineRunner and ApplicationRunner
+-----------------------------------------------------------
+	In a Spring Boot application, CommandLineRunner and ApplicationRunner are used to execute specific logic once the application has started. They are particularly useful for tasks like bootstrapping data, running custom scripts, or performing initialization tasks when the application is up and running.
+	
+	1) CommandLineRunner
+		Purpose: CommandLineRunner is an interface that allows you to run a block of code at application startup. It provides access to the arguments passed to the application via the command line.
+		* Key Method:
+			void run(String... args) throws Exception;
+		* Usage Example:
+			@Component
+			public class MyCommandLineRunner implements CommandLineRunner {
+				@Override
+				public void run(String... args) throws Exception {
+					System.out.println("CommandLineRunner executed with arguments: " + Arrays.toString(args));
+				}
+			}
+		* When to Use:
+			- If you need to work directly with String arguments passed from the command line.	
+			- For scenarios where initialization doesn't rely on structured application-specific objects.
+			
+	2) ApplicationRunner
+		Purpose: ApplicationRunner is similar to CommandLineRunner but provides a more structured approach by exposing ApplicationArguments, which gives better access to parsed arguments (e.g., options and non-option arguments).
+		* Key Method:
+			void run(ApplicationArguments args) throws Exception;
+		* Usage Example:
+			@Component
+			public class MyApplicationRunner implements ApplicationRunner {
+				@Override
+				public void run(ApplicationArguments args) throws Exception {
+					System.out.println("Option Names: " + args.getOptionNames());
+					System.out.println("Non-option Args: " + args.getNonOptionArgs());
+				}
+			}
+		* When to Use:
+			- If you want to process structured command-line arguments efficiently.
+			- When your initialization code benefits from using ApplicationArguments for cleaner argument handling.
+	
+	Use Cases : Both interfaces are ideal for tasks such as:
+		1) Loading initial data into the database.
+		2) Triggering background processes at startup.
+		3) Logging or auditing startup configurations.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+16) How do you connect a Spring Boot application to a database?
+17) What is Spring Data JPA, and how does it simplify database access?
+18) How do you handle exceptions in Spring Boot REST APIs?
+19) What is the use of @Transactional annotation in Spring Boot?
+20) How do you enable CORS (Cross-Origin Resource Sharing) in Spring Boot?
+=============================================================================================================================================================================
+
+21) What is the difference between monolithic, microservices, and serverless architectures?
+
+Monolithic, microservices, and serverless architectures differ in how they structure applications and how they are deployed. 
+Monolithic architecture 
+A single unit that includes all application components, such as the user interface, database, and logic 
+Typically deployed as a single unit to a server or cluster 
+Can be less flexible than microservices or serverless architectures 
+Can be less efficient and more difficult to scale as applications grow 
+Microservices architecture 
+An application made up of multiple independent services that can be deployed separately
+Allows for selective scaling of individual components
+Can be more efficient and flexible than monolithic architecture
+Serverless architecture 
+An application made up of independent functions that are triggered by specific events
+The cloud provider handles scaling and resource allocation
+Can be more efficient and flexible than monolithic architecture
+Can be cost-effective for applications with fluctuating demands
+When choosing an architecture, consider the project's size, how often it will be updated, and expected usage patterns. 
+=============================================================================================================================================================================
+
+22) How do you implement security in a Spring Boot application? (Spring Security & JWT)
+=============================================================================================================================================================================
+
+23) What is the difference between @Component, @Service, and @Repository?
+
+In Spring, @Component is a generic annotation, while @Service and @Repository are more specific annotations that are subtypes of @Component. All three annotations are used 
+for auto-detecting Spring beans and dependency injection. 
+Annotation
+Purpose
+@Component
+A general-purpose annotation for any Spring-managed component
+@Service
+An annotation for classes that hold business logic in the service layer
+@Repository
+An annotation for classes that act as a database repository in the persistence layer
+Additional details
+@Repository translates persistence-related exceptions into a Spring DataAccessException 
+@Service doesn't offer any additional functionality over @Component 
+@Component, @Service, and @Controller are all used to auto-detect Spring beans when context scanning is enabled 
+@Controller is used in Spring MVC to define controllers 
+Using @Repository and @Service annotations over @Component can communicate the bean's intent more clearly 
+You can use one annotation in place of another and still get your way around. 
+============================================================================================================================================================================
+24) How does Spring Boot handle caching, and which caching mechanisms are supported?
+25) What are actuators in Spring Boot, and how do you enable them?
+26) How do you configure custom health checks in Spring Boot Actuator?
+27) What is Spring Cloud, and how does it help in building microservices?
+28) Explain circuit breaker patterns in Spring Boot (Resilience4j, Hystrix).
+29) How do you implement asynchronous processing in Spring Boot?
+30) How do you deploy a Spring Boot application on AWS EC2, Kubernetes, or Docker?
+31) How would you troubleshoot a slow Spring Boot application?
+32) What would you do if a microservice in your Spring Boot architecture crashes frequently?
+33) How would you design a rate-limiting mechanism in a Spring Boot application?
+34) How do you handle transactions across multiple microservices?
+35) How would you design an event-driven system in Spring Boot using Kafka?[

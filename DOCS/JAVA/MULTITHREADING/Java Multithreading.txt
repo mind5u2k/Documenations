@@ -1,0 +1,194 @@
+Thread
+
+Thread Types
+	1) Daemon : 
+		-Background threads for tasks such as gc
+	2) Non-Daemon : 
+		- Created within application
+		- main thread: created by JVM to run main()
+		- JVM will not terminate if at least one non-daemon thread is running
+		
+Launch a thread:
+	1) Create Task
+		- Runnable task = new Runnable();
+		- Runnable has exactly one method run()
+	2) Create Thread with task
+		- Thread thread= new Thread(task); //NEW STATE
+	2) Start Thread
+		- thread.start(); //RUNNABLE STATE
+		- New call stack with run() is created for thread
+		
+Thread Scheduler :
+	- Makes decisions on who runs and how long they run
+	- No guarantee - never rely on schledure's behaviour.
+	
+Thread Priority :
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Prevent Thread Execution :
+	There are 3 ways to prevent the thread execution
+	1. join() : The join() method allows one thread to wait for the completion of another thread before continuing its execution. This is particularly useful when one thread depends on the result or completion of another.
+	Key Points:
+		1) The thread calling join() enters a WAITING state until the target thread finishes execution.
+		2) It ensures a predictable sequence of thread execution.
+		3) Variants: join() (waits indefinitely) and join(milliseconds) (waits for a specific duration).
+	Example:
+			class JoinExample extends Thread {
+				@Override
+				public void run() {
+					System.out.println(Thread.currentThread().getName() + " is running.");
+					try {
+						Thread.sleep(2000); // Simulate work
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					System.out.println(Thread.currentThread().getName() + " has finished.");
+				}
+			}
+			public class JoinDemo {
+				public static void main(String[] args) {
+					Thread thread1 = new JoinExample();
+					Thread thread2 = new JoinExample();
+					thread1.start();
+					thread2.start();
+					try {
+						thread1.join(); // Main thread waits for thread1 to finish
+						thread2.join(); // Main thread waits for thread2 to finish
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					System.out.println("Main thread finished.");
+				}
+			}
+
+	2. yield() : The yield() method is a hint to the thread scheduler that the current thread is willing to pause its execution and allow other threads of equal priority to run.
+	Key Points:
+		1) It does not guarantee that the current thread will pause; the decision is made by the scheduler.
+		2) The thread remains in the RUNNABLE state and may be picked up again by the scheduler immediately.
+		3) Commonly used to improve CPU utilization and balance execution among threads.
+		Example :
+				class YieldExample implements Runnable {
+					@Override
+					public void run() {
+						for (int i = 0; i < 5; i++) {
+							System.out.println(Thread.currentThread().getName() + " is executing.");
+							Thread.yield(); // Hint to allow other threads of the same priority to execute
+						}
+					}
+				}
+				public class YieldDemo {
+					public static void main(String[] args) {
+						Thread thread1 = new Thread(new YieldExample(), "Thread-1");
+						Thread thread2 = new Thread(new YieldExample(), "Thread-2");
+						thread1.start();
+						thread2.start();
+					}
+				}
+
+	3. sleep() : The sleep() method pauses the execution of the current thread for a specified duration. During this time, the thread moves into the TIMED_WAITING state.
+	Key Points:
+		1) The thread resumes execution after the specified time has elapsed.
+		2) It is often used to simulate delays or pauses in execution.
+		3) If interrupted during sleep, it throws an InterruptedException.
+		Example :
+				public class SleepDemo {
+					public static void main(String[] args) {
+						Thread thread = new Thread(() -> {
+							System.out.println("Thread is sleeping...");
+							try {
+								Thread.sleep(3000); // Pause for 3 seconds
+							} catch (InterruptedException e) {
+								System.out.println("Thread interrupted.");
+							}
+							System.out.println("Thread resumed.");
+						});
+
+						thread.start();
+					}
+				}
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Inter thread communications :
+-----------------------------
+	Inter-thread communication in Java refers to the mechanism that allows threads to communicate and coordinate their execution. This is often used when threads need to share information or resources and work together to achieve a common goal. Inter-thread communication becomes crucial when working with synchronized blocks or methods, where threads cooperate effectively.
+	
+	Key Concepts :
+		1) wait(): A thread can call this method (on a synchronized object) to release the lock and enter the waiting state until another thread calls notify() or notifyAll().
+		2) notify(): Wakes up a single thread that is waiting on the object’s monitor.
+		3) notifyAll(): Wakes up all threads that are waiting on the object’s monitor.
+		4) Monitor: Threads must hold the monitor (lock) of the object to call these methods, i.e., they must operate inside synchronized blocks or methods.
+		
+	Steps for Inter-Thread Communication
+		1) Synchronization: Synchronize critical sections to ensure threads access shared resources safely.
+		2) Calling Wait/Notify: Use wait() to pause execution and notify() or notifyAll() to resume paused threads.
+		3) Shared Resource: Use a shared object for synchronization and communication.
+	
+	Example: Producer-Consumer Problem
+		In this example, the producer thread adds items to a buffer, while the consumer thread retrieves items. Both threads communicate to ensure the buffer doesn't overflow or go empty.
+		
+			import java.util.LinkedList;
+			class SharedBuffer {
+				private LinkedList<Integer> buffer = new LinkedList<>();
+				private int capacity = 5;
+				// Produce items
+				public synchronized void produce() throws InterruptedException {
+					int value = 0;
+					while (true) {
+						// If buffer is full, wait for the consumer
+						while (buffer.size() == capacity) {
+							wait();
+						}
+						System.out.println("Produced: " + value);
+						buffer.add(value++);
+						notify(); // Notify the consumer
+						Thread.sleep(1000); // Simulate time for production
+					}
+				}
+
+				// Consume items
+				public synchronized void consume() throws InterruptedException {
+					while (true) {
+						// If buffer is empty, wait for the producer
+						while (buffer.isEmpty()) {
+							wait();
+						}
+						int value = buffer.removeFirst();
+						System.out.println("Consumed: " + value);
+						notify(); // Notify the producer
+						Thread.sleep(1000); // Simulate time for consumption
+					}
+				}
+			}
+
+			public class ProducerConsumerExample {
+				public static void main(String[] args) {
+					SharedBuffer buffer = new SharedBuffer();
+
+					Thread producerThread = new Thread(() -> {
+						try {
+							buffer.produce();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					});
+
+					Thread consumerThread = new Thread(() -> {
+						try {
+							buffer.consume();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					});
+
+					producerThread.start();
+					consumerThread.start();
+				}
+			}
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Java Memory Model :
+
+
+Volatile :

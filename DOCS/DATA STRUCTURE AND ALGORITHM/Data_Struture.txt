@@ -1,0 +1,62 @@
+DSA a day can keep interview rejection away.
+
+Yes practicing at least one question a day can help you crack any SDE interview.
+
+I've compiled a collection of about 13 coding problem patterns that I think can be incredibly beneficial for anyone looking to grasp these powerful algorithmic techniques. 
+
+1. Substring problem patterns:
+ - https://lnkd.in/giASrwds
+
+2. Sliding window patterns:
+ - https://lnkd.in/gjatQ5pK
+
+3. Two pointer patterns:
+ - https://lnkd.in/gBfWgHYe
+
+4. Backtracking patterns:0
+ - https://lnkd.in/g9csxVa4
+
+5. Dynamic Programming patterns:
+ - https://lnkd.in/gbpRU46g
+
+6. Binary search patterns:
+ - https://lnkd.in/gKEm_qUK
+
+7. Tree patterns:
+ - https://lnkd.in/gKja_D5H
+
+8. Graph patterns: 
+ - https://lnkd.in/gKE6w7Jb
+
+9. Monotonic patterns:
+ - https://lnkd.in/gdYahWVN
+
+10. Bit manipulation patterns:
+ - https://lnkd.in/gmMMST5J
+
+11. String question patterns:
+ - https://lnkd.in/gkNvEi8j
+
+12. DFS and BFS patterns:
+ - https://lnkd.in/gPgpsgaQ
+
+13. Fourteen Coding interview patterns:
+ - https://lnkd.in/gMZJVkFf
+
+Consistency is the key!
+
+Here are some of the best platforms to practice DSA problems daily. 
+
+ - HackerRank
+ - LeetCode
+ - GeeksforGeeks
+ - takeUforward: https://lnkd.in/d-UNHu6B
+ - Piyush Agarwal: https://lnkd.in/dtBth5PF
+ - 𝗖𝗼𝗱𝗲 𝗪𝗶𝘁𝗵 𝗛𝗮𝗿𝗿𝘆: https://lnkd.in/d-Uq-tCn
+ - Shrayansh Jain: https://lnkd.in/dUABhnbT
+
+A big shout out to Raj Vikramaditya for great DSA content.
+
+𝗜’𝘃𝗲 𝗰𝗼𝗺𝗽𝗶𝗹𝗲𝗱 𝗲𝘃𝗲𝗿𝘆𝘁𝗵𝗶𝗻𝗴 𝗶𝗻𝘁𝗼 𝗮 𝗦𝘆𝘀𝘁𝗲𝗺 𝗗𝗲𝘀𝗶𝗴𝗻 𝗞𝗜𝗧 𝘁𝗼 𝗺𝗮𝗸𝗲 𝗽𝗿𝗲𝗽𝗮𝗿𝗮𝘁𝗶𝗼𝗻 𝗲𝗮𝘀𝗶𝗲𝗿.
+
+𝗚𝗲𝘁 𝗶𝘁 𝗵𝗲𝗿𝗲: https://lnkd.in/dte69Z5N

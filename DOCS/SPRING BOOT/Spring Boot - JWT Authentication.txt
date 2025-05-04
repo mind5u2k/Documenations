@@ -1,0 +1,247 @@
+JWT (JSON Web Token) authentication is a popular mechanism for securing RESTful services in Spring Boot applications. It involves issuing a signed token (typically containing user identity and claims) to a client after authentication and then validating that token on every request. This approach is stateless—no session is maintained on the server—making it scalable and ideal for microservices.
+
+Below is a step-by-step guide with detailed explanations and a complete demo example.
+
+1. Overview of the JWT Authentication Flow
+	* User Login: The client (e.g., a web or mobile app) sends credentials (username and password) to a login endpoint.
+	* Token Generation: The server authenticates the credentials and, when successful, generates a JWT containing certain claims (such as the username, roles, expiration date, etc.). The token is signed using a secret key.
+	* Client Uses Token: The JWT is then returned to the client, which stores it (typically in local storage or a cookie). For every subsequent request, the token is added (usually in the Authorization header with a prefix like Bearer).
+	* Token Validation: A server-side filter examines incoming requests. It extracts the token, validates the signature, and checks claims (like expiration). If valid, the user identity is set in Spring Security’s SecurityContext, allowing the request to proceed.
+	* Securing Endpoints: Protected resources require a valid JWT. If the token is missing or invalid, the request is rejected (e.g., with a 401 status).
+	
+2. Key Components and Their Implementation
+	a. Maven Dependencies : Make sure to add the necessary dependencies in your pom.xml: Spring Boot Starter Web, Spring Boot Starter Security, and a JWT library (for example, JJWT).
+	
+		<dependencies>
+		  <!-- Spring Boot starters -->
+		  <dependency>
+			  <groupId>org.springframework.boot</groupId>
+			  <artifactId>spring-boot-starter-web</artifactId>
+		  </dependency>
+		  <dependency>
+			  <groupId>org.springframework.boot</groupId>
+			  <artifactId>spring-boot-starter-security</artifactId>
+		  </dependency>
+		  
+		  <!-- JWT library -->
+		  <dependency>
+			  <groupId>io.jsonwebtoken</groupId>
+			  <artifactId>jjwt</artifactId>
+			  <version>0.9.1</version>
+		  </dependency>
+		  
+		  <!-- Validation dependency if needed -->
+		  <dependency>
+			  <groupId>org.springframework.boot</groupId>
+			  <artifactId>spring-boot-starter-validation</artifactId>
+		  </dependency>
+		</dependencies>
+
+	b. JWT Utility Class : This class will handle token generation and validation.
+	
+			package com.example.demo.util;
+
+			import io.jsonwebtoken.Claims;
+			import io.jsonwebtoken.Jwts;
+			import io.jsonwebtoken.SignatureAlgorithm;
+			import org.springframework.stereotype.Component;
+
+			import java.util.Date;
+			import java.util.HashMap;
+			import java.util.Map;
+			import java.util.function.Function;
+
+			@Component
+			public class JwtUtil {
+				// Secret key should be kept securely (e.g., in environment variables)
+				private final String SECRET_KEY = "mysecretkey12345";
+				// Extract specific claim from token
+				public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+					final Claims claims = extractAllClaims(token);
+					return claimsResolver.apply(claims);
+				}				
+				// Extract all claims from token
+				private Claims extractAllClaims(String token) {
+					return Jwts.parser()
+							   .setSigningKey(SECRET_KEY)
+							   .parseClaimsJws(token)
+							   .getBody();
+				}				
+				// Check if token has expired
+				private Boolean isTokenExpired(String token) {
+					return extractExpiration(token).before(new Date());
+				}				
+				public Date extractExpiration(String token) {
+					return extractClaim(token, Claims::getExpiration);
+				}				
+				// Generate token for user using claims
+				public String generateToken(String username) {
+					Map<String, Object> claims = new HashMap<>();
+					// You can add roles or other claims here if needed.
+					return createToken(claims, username);
+				}				
+				// Create token and set claims, subject, issued date, expiration and sign it.
+				private String createToken(Map<String, Object> claims, String subject) {
+					long expirationTimeInMs = 1000 * 60 * 60; // 1 hour expiration
+					return Jwts.builder()
+							   .setClaims(claims)
+							   .setSubject(subject)
+							   .setIssuedAt(new Date(System.currentTimeMillis()))
+							   .setExpiration(new Date(System.currentTimeMillis() + expirationTimeInMs))
+							   .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+							   .compact();
+				}				
+				// Validate token with username (or UserDetails in a more detailed implementation)
+				public Boolean validateToken(String token, String username) {
+					final String tokenUsername = extractClaim(token, Claims::getSubject);
+					return (tokenUsername.equals(username) && !isTokenExpired(token));
+				}
+			}
+			
+	c. JWT Request Filter : This filter intercepts incoming HTTP requests, extracts the token from the header, validates it, and sets the authentication in Spring Security’s context.
+	
+			package com.example.demo.filter;
+
+			import com.example.demo.util.JwtUtil;
+			import org.springframework.beans.factory.annotation.Autowired;
+			import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+			import org.springframework.security.core.context.SecurityContextHolder;
+			import org.springframework.security.core.userdetails.User;
+			import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+			import org.springframework.stereotype.Component;
+			import org.springframework.web.filter.OncePerRequestFilter;
+			import javax.servlet.FilterChain;
+			import javax.servlet.ServletException;
+			import javax.servlet.http.HttpServletRequest;
+			import javax.servlet.http.HttpServletResponse;
+			import java.io.IOException;
+			import java.util.Collections;
+
+			@Component
+			public class JwtRequestFilter extends OncePerRequestFilter {
+				@Autowired
+				private JwtUtil jwtUtil;
+				// For demonstration, a dummy user from token
+				// In real applications, you would load user details from your service or repository.
+				@Override
+				protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+						throws ServletException, IOException {
+					final String authorizationHeader = request.getHeader("Authorization");
+					String username = null;
+					String jwt = null;
+					// Bearer token validation
+					if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+						jwt = authorizationHeader.substring(7);
+						try {
+							username = jwtUtil.extractClaim(jwt, claims -> claims.getSubject());
+						} catch (Exception e) {
+							// Handle exceptions such as expired or malformed tokens
+							logger.error("JWT extraction error: " + e.getMessage());
+						}
+					}
+					// Set security context only if username is not null and context is not set already.
+					if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+						
+						// In a production-level code, load user details from a UserDetailsService.
+						// For demo, we assume token is valid if username is extracted.
+						if (jwtUtil.validateToken(jwt, username)) {
+							UsernamePasswordAuthenticationToken authenticationToken =
+									new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
+							authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+							SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+						}
+					}					
+					filterChain.doFilter(request, response);
+				}
+			}
+
+	d. Security Configuration : Configure Spring Security to use the JWT filter and define which endpoints are public (e.g., the authentication endpoint) and which are secured.
+	
+			package com.example.demo.config;
+
+			import com.example.demo.filter.JwtRequestFilter;
+			import org.springframework.beans.factory.annotation.Autowired;
+			import org.springframework.context.annotation.Bean;
+			import org.springframework.context.annotation.Configuration;
+			import org.springframework.security.authentication.AuthenticationManager;
+			import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+			import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+			import org.springframework.security.config.http.SessionCreationPolicy;
+			import org.springframework.security.web.SecurityFilterChain;
+			import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+			@Configuration
+			public class SecurityConfig {
+
+				@Autowired
+				private JwtRequestFilter jwtRequestFilter;
+
+				@Bean
+				public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+					http.csrf().disable()
+						.authorizeHttpRequests()
+							// Allow unauthenticated access to the authentication endpoint
+							.antMatchers("/authenticate").permitAll()
+							.anyRequest().authenticated()
+						.and()
+							// No session; every request must be authenticated via JWT
+							.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+					// Add our custom JWT filter before Spring Security's own filter
+					http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+
+					return http.build();
+				}
+
+				// Bean for authentication Manager can be defined if needed
+				@Bean
+				public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+					return authenticationConfiguration.getAuthenticationManager();
+				}
+			}
+
+	e. Authentication Controller : Provide a REST endpoint where clients can log in. For simplicity, this demonstration accepts any input and returns a token. In a real-world scenario, credentials must be validated against a user database or an external service.
+	
+			package com.example.demo.controller;
+
+			import com.example.demo.util.JwtUtil;
+			import org.springframework.beans.factory.annotation.Autowired;
+			import org.springframework.http.ResponseEntity;
+			import org.springframework.web.bind.annotation.*;
+
+			@RestController
+			public class AuthenticationController {
+
+				@Autowired
+				private JwtUtil jwtUtil;
+
+				// A simple authentication endpoint
+				@PostMapping("/authenticate")
+				public ResponseEntity<?> createAuthenticationToken(@RequestParam String username,
+																   @RequestParam String password) {
+					// In a production system, verify the username and password here.
+					// For demonstration, we accept any credentials.
+
+					// Generate the token with the subject as username.
+					String token = jwtUtil.generateToken(username);
+					return ResponseEntity.ok(token);
+				}
+			}
+
+3. Running the Application
+	a. Start the Application: Run the Spring Boot application as you normally would with your IDE or via the command line.
+	b. Authenticate: Post to the /authenticate endpoint with a username and password. For example, using cURL:
+		curl -X POST "http://localhost:8080/authenticate?username=testuser&password=pass"
+		You should receive a JWT token in response.
+	c. Access Secure Endpoints: Use the returned token in the Authorization header (with the Bearer prefix) to access other endpoints:
+		curl -H "Authorization: Bearer <your-token-here>" http://localhost:8080/some-protected-endpoint
+		The JwtRequestFilter will intercept this request, validate the token, and set the authentication context accordingly.
+		
+Final Thoughts
+	This implementation demonstrates the key building blocks of JWT authentication in Spring Boot:
+		* A utility class for token generation and validation
+		* A filter that integrates with Spring Security to process JWTs
+		* Securing endpoints via Spring Security configuration
+		* An authentication endpoint for issuing tokens
+	This approach provides a stateless, scalable authentication mechanism ideal for microservices and RESTful APIs.

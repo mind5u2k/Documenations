@@ -1,0 +1,526 @@
+• Singleton Design Patters :
+---------------------------- 
+	The Singleton Design Pattern is one of the creational design patterns in software engineering. It ensures that a class has only one instance and provides a global point of access to it. This is particularly useful when exactly one object is needed to coordinate actions across the system, such as a configuration manager, logging utility, or connection pool.
+
+Key Characteristics:
+	1) Single Instance: Ensures only one instance of the class is created.
+	2) Global Access: Provides a single access point to that instance.
+	3) Lazy Initialization (optional): The instance is created only when it is required, improving resource usage.
+	4) Thread Safety: Ensures correct behavior in multithreaded environments.
+
+Implementation Steps:
+	1) Private Constructor: Restrict instantiation of the class from outside.
+	2) Static Variable: Store the single instance in a static variable.
+	3) Static Method: Provide a static method to access the instance.
+
+Example:
+1. Basic Singleton Implementation
+	public class Singleton {
+		// Static variable to hold the single instance
+		private static Singleton instance;
+
+		// Private constructor to prevent instantiation from outside
+		private Singleton() {}
+
+		// Public method to provide access to the single instance
+		public static Singleton getInstance() {
+			if (instance == null) {
+				instance = new Singleton(); // Lazy initialization
+			}
+			return instance;
+		}
+
+		// Example method
+		public void showMessage() {
+			System.out.println("Hello from Singleton!");
+		}
+	}
+
+	public class Main {
+		public static void main(String[] args) {
+			// Access Singleton instance
+			Singleton singleton = Singleton.getInstance();
+			singleton.showMessage();
+		}
+	}
+2. Thread-Safe Singleton
+	The basic implementation is not thread-safe. To make it safe for multithreading, synchronization can be used:
+	public class Singleton {
+		private static Singleton instance;
+
+		private Singleton() {}
+
+		public static synchronized Singleton getInstance() {
+			if (instance == null) {
+				instance = new Singleton();
+			}
+			return instance;
+		}
+	}
+	This ensures that only one thread can create the instance at a time.	
+3. Double-Checked Locking
+	For better performance, we can use the double-checked locking approach. It minimizes synchronization overhead by checking the instance first without locking.
+	public class Singleton {
+		private static volatile Singleton instance;
+
+		private Singleton() {}
+
+		public static Singleton getInstance() {
+			if (instance == null) {
+				synchronized (Singleton.class) {
+					if (instance == null) {
+						instance = new Singleton();
+					}
+				}
+			}
+			return instance;
+		}
+	}
+4. Eager Initialization
+	If resource constraints are not an issue, the instance can be created eagerly:
+	public class Singleton {
+		private static final Singleton instance = new Singleton();
+
+		private Singleton() {}
+
+		public static Singleton getInstance() {
+			return instance;
+		}
+	}
+
+Advantages:
+	1) Controlled Access: Singleton restricts instantiation to one instance, ensuring consistency.
+	2) Reduced Memory Usage: Avoids multiple instances of the same class.
+	3) Global Access: Offers a single access point to the instance.
+Disadvantages:
+	1) Global State Management: Can introduce unintended coupling between classes.
+	2) Testability: Singleton makes testing more complex due to its global state.
+Use Cases:
+	1) Database Connection Pools
+	2) Configuration Manager
+	3) Logging Utility
+	4) Caching Mechanisms
+	
+====================================================================================================================================================================================
+
+• Builder Design Pattern :
+-------------------------- 
+	The Builder Design Pattern is a creational design pattern that helps construct complex objects step-by-step. It separates the construction process from the representation, allowing you to create different representations of the same object with the same construction process. This pattern is particularly useful when an object contains many optional fields or requires elaborate initialization.
+
+Key Characteristics:
+	1) Encapsulation of Construction Logic: The building process is encapsulated inside a separate class called the Builder.
+	2) Step-by-Step Construction: The object is constructed in multiple steps, providing flexibility and clarity.
+	3) Immutability: Often, the final object is immutable, as all fields are set before returning it.
+	4) Fluent API: The Builder typically supports a fluent interface for chaining method calls.
+	
+Participants:
+	1) Product: The complex object being constructed.
+	2) Builder: Provides methods to configure and construct parts of the Product.
+	3) ConcreteBuilder: Implements the construction logic for a specific representation of the Product.
+	4) Director (Optional): Orchestrates the construction process by using the Builder in a specific sequence.
+
+Example:
+Suppose we are building a House object, which has several optional fields.
+1. Without Builder Pattern: Constructing a complex object using telescoping constructors can lead to unreadable code:
+	House house = new House("Wood", 2, true, false, true);
+	Here, it's unclear what each argument represents.
+	
+2. Using the Builder Pattern
+	Step 1: Create the Product (House) class.
+	public class House {
+		private final String material;
+		private final int floors;
+		private final boolean hasGarage;
+		private final boolean hasGarden;
+		private final boolean hasSwimmingPool;
+
+		private House(HouseBuilder builder) {
+			this.material = builder.material;
+			this.floors = builder.floors;
+			this.hasGarage = builder.hasGarage;
+			this.hasGarden = builder.hasGarden;
+			this.hasSwimmingPool = builder.hasSwimmingPool;
+		}
+
+		// Getters (optional, for accessing fields)
+		public String getMaterial() { return material; }
+		public int getFloors() { return floors; }
+		public boolean hasGarage() { return hasGarage; }
+		public boolean hasGarden() { return hasGarden; }
+		public boolean hasSwimmingPool() { return hasSwimmingPool; }
+
+		// Builder Class
+		public static class HouseBuilder {
+			private String material;
+			private int floors;
+			private boolean hasGarage;
+			private boolean hasGarden;
+			private boolean hasSwimmingPool;
+
+			public HouseBuilder(String material, int floors) {
+				this.material = material; // Mandatory fields
+				this.floors = floors;
+			}
+
+			public HouseBuilder setGarage(boolean hasGarage) {
+				this.hasGarage = hasGarage;
+				return this; // Fluent API
+			}
+
+			public HouseBuilder setGarden(boolean hasGarden) {
+				this.hasGarden = hasGarden;
+				return this;
+			}
+
+			public HouseBuilder setSwimmingPool(boolean hasSwimmingPool) {
+				this.hasSwimmingPool = hasSwimmingPool;
+				return this;
+			}
+
+			public House build() {
+				return new House(this); // Builds the final object
+			}
+		}
+	}	
+	Step 2: Use the Builder to construct the object.
+	public class Main {
+		public static void main(String[] args) {
+			House house = new House.HouseBuilder("Brick", 3)
+					.setGarage(true)
+					.setGarden(false)
+					.setSwimmingPool(true)
+					.build();
+
+			System.out.println("Material: " + house.getMaterial());
+			System.out.println("Floors: " + house.getFloors());
+			System.out.println("Has Garage: " + house.hasGarage());
+			System.out.println("Has Garden: " + house.hasGarden());
+			System.out.println("Has Swimming Pool: " + house.hasSwimmingPool());
+		}
+	}
+	Output:
+	Material: Brick
+	Floors: 3
+	Has Garage: true
+	Has Garden: false
+	Has Swimming Pool: true
+
+Advantages:
+	1) Clarity and Readability: Avoids constructors with numerous parameters.
+	2) Customizable Object Creation: Easily construct objects with different configurations.
+	3) Immutability: Final object is immutable after creation.
+	4) Extensibility: Add new optional fields without breaking existing code.
+Disadvantages:
+	1) Complexity: The pattern adds additional classes (Builder).
+	2) Overkill for Simple Objects: Not needed when an object has only a few fields.
+Common Use Cases:
+	1) Java Standard Library: 
+		StringBuilder for building strings.
+		java.time.LocalDateTime.Builder for constructing date/time objects.
+	2) UI Frameworks:
+		Constructing complex GUI components. 
+	3) Configuration Classes:
+		For setting up configurations with multiple optional settings.
+
+==============================================================================================================================================================================
+
+• Factory Design Pattern :
+-------------------------
+	The Factory Design Pattern is a creational design pattern used to create objects without specifying their exact class. It delegates the instantiation logic to factory methods, which return an object of a specific type. This pattern provides flexibility and reusability, making it easier to manage and maintain object creation logic.
+
+Key Characteristics:
+	1) Encapsulation of Object Creation: It hides the object creation process from the client.
+	2) Polymorphic Object Creation: The factory method returns objects of a common interface or superclass, allowing polymorphism.
+	3) Decoupling: Decouples the client from the concrete implementation classes.
+	
+Participants in Factory Pattern:
+	1) Product: The interface or abstract class that defines the type of objects being created.
+	2) ConcreteProduct: Specific implementations of the Product interface or class.
+	3) Creator/Factory: Contains a method (often static) to create and return objects of the Product type.
+	
+Types of Factory Design Pattern:
+	1) Simple Factory: 
+		- Not a formal design pattern but a common implementation.
+		- A single factory class is responsible for creating objects based on input parameters.
+		- Example: A Vehicle Factory that creates objects based on the type of vehicle (Car, Bike).
+	2) Factory Method Pattern:
+		- The creation logic is deferred to subclasses of the factory class.
+		- Each subclass implements the factory method to create objects of a specific type.
+		- Example: Shape Factory, where subclasses like CircleFactory and RectangleFactory define the creation of respective shapes.
+	3) Abstract Factory Pattern: 
+		- A super-factory (or factory of factories) that provides interfaces for creating families of related objects.
+		- Example: GUI Factory, where you create families of objects like Buttons and Checkboxes for different operating systems (Windows, Mac).
+
+Examples of Each Type:
+1. Simple Factory Example: Vehicle Factory	
+	Step 1: Define the Product Interface
+		public interface Vehicle {
+			void drive();
+		}
+	Step 2: Create Concrete Implementations	
+		public class Car implements Vehicle {
+			@Override
+			public void drive() {
+				System.out.println("Driving a car!");
+			}
+		} 
+		public class Bike implements Vehicle {
+			@Override
+			public void drive() {
+				System.out.println("Riding a bike!");
+			}
+		}
+	Step 3: Create the Factory
+		public class VehicleFactory {
+			public static Vehicle getVehicle(String type) {
+				switch (type.toUpperCase()) {
+					case "CAR": return new Car();
+					case "BIKE": return new Bike();
+					default: throw new IllegalArgumentException("Unknown vehicle type");
+				}
+			}
+		}
+	Step 4: Client Code	
+		public class Main {
+			public static void main(String[] args) {
+				Vehicle car = VehicleFactory.getVehicle("CAR");
+				car.drive(); // Output: Driving a car!
+				Vehicle bike = VehicleFactory.getVehicle("BIKE");
+				bike.drive(); // Output: Riding a bike!
+			}
+		}
+		
+2. Factory Method Example: Shape Factory		
+	Step 1: Define the Product
+		public interface Shape {
+			void draw();
+		}
+	Step 2: Create Concrete Products	
+		public class Circle implements Shape {
+			@Override
+			public void draw() {
+				System.out.println("Drawing a Circle");
+			}
+		}
+		public class Rectangle implements Shape {
+			@Override
+			public void draw() {
+				System.out.println("Drawing a Rectangle");
+			}
+		}
+	Step 3: Create the Factory Abstract Class and Subclasses	
+		public abstract class ShapeFactory {
+			public abstract Shape createShape();
+		}
+		public class CircleFactory extends ShapeFactory {
+			@Override
+			public Shape createShape() {
+				return new Circle();
+			}
+		}
+		public class RectangleFactory extends ShapeFactory {
+			@Override
+			public Shape createShape() {
+				return new Rectangle();
+			}
+		}
+	Step 4: Client Code	
+		public class Main {
+			public static void main(String[] args) {
+				ShapeFactory circleFactory = new CircleFactory();
+				Shape circle = circleFactory.createShape();
+				circle.draw(); // Output: Drawing a Circle
+
+				ShapeFactory rectangleFactory = new RectangleFactory();
+				Shape rectangle = rectangleFactory.createShape();
+				rectangle.draw(); // Output: Drawing a Rectangle
+			}
+		}
+		
+3. Abstract Factory Example: GUI Factory		
+	Step 1: Define Abstract Products
+		public interface Button {
+			void render();
+		}
+
+		public interface Checkbox {
+			void select();
+		}
+	Step 2: Create Concrete Products
+		public class WindowsButton implements Button {
+			@Override
+			public void render() {
+				System.out.println("Rendering a Windows button");
+			}
+		}
+		public class MacButton implements Button {
+			@Override
+			public void render() {
+				System.out.println("Rendering a Mac button");
+			}
+		}
+		public class WindowsCheckbox implements Checkbox {
+			@Override
+			public void select() {
+				System.out.println("Selecting a Windows checkbox");
+			}
+		}
+		public class MacCheckbox implements Checkbox {
+			@Override
+			public void select() {
+				System.out.println("Selecting a Mac checkbox");
+			}
+		}
+	Step 3: Create the Abstract Factory
+		public interface GUIFactory {
+			Button createButton();
+			Checkbox createCheckbox();
+		}
+		public class WindowsGUIFactory implements GUIFactory {
+			@Override
+			public Button createButton() {
+				return new WindowsButton();
+			}
+			@Override
+			public Checkbox createCheckbox() {
+				return new WindowsCheckbox();
+			}
+		}
+		public class MacGUIFactory implements GUIFactory {
+			@Override
+			public Button createButton() {
+				return new MacButton();
+			}
+			@Override
+			public Checkbox createCheckbox() {
+				return new MacCheckbox();
+			}
+		}
+	Step 4: Client Code
+		public class Main {
+			public static void main(String[] args) {
+				GUIFactory windowsFactory = new WindowsGUIFactory();
+				Button windowsButton = windowsFactory.createButton();
+				windowsButton.render(); // Output: Rendering a Windows button
+
+				GUIFactory macFactory = new MacGUIFactory();
+				Button macButton = macFactory.createButton();
+				macButton.render(); // Output: Rendering a Mac button
+			}
+		}
+
+
+Summary Table:
+Type	Key Idea	Example
+Simple Factory	Single class creates objects dynamically.	Vehicle Factory.
+Factory Method	Subclasses implement the creation logic.	Shape Factory (Circle/Rectangle).
+Abstract Factory	Factory of factories for related objects.	GUI Factory (Windows/Mac Button).
+
+============================================================================================================================================================================
+
+• Prototype :
+	The Prototype Design Pattern is a creational design pattern that allows you to create a new object by cloning an existing object. Instead of instantiating a new object from scratch, this pattern uses an existing object (the prototype) as a template. This is especially useful when the cost of object creation is high or when you need copies of objects that are slightly modified versions of the original.
+	
+Key Characteristics of the Prototype Design Pattern:
+	1) Cloning: Objects are created by copying (or cloning) an existing instance rather than instantiating a new one.
+	2) Avoids Rebuilding: Saves time and resources when the process of creating objects is computationally expensive.
+	3) Flexibility: Allows creation of objects with variations without modifying the original class.
+	4) Shallow and Deep Cloning: Shallow copy duplicates the object's reference, while deep copy clones the entire object, including its fields.
+	
+Implementation Steps:
+	1) Prototype Interface: Define a method (e.g., clone()) to clone the object.
+	2) Concrete Prototype: Implement the cloning logic, either shallow or deep cloning.
+	3) Client: Use the prototype to create new objects by cloning.
+	
+Example in Java: Prototype Pattern with Shape Objects
+	Step 1: Define the Prototype Interface
+		public interface Prototype {
+			Prototype clone(); // Method to clone the object
+		}
+	Step 2: Create the Concrete Prototype Classes	
+		public class Circle implements Prototype {
+			private int radius;
+			public Circle(int radius) {
+				this.radius = radius;
+			}
+			public void setRadius(int radius) {
+				this.radius = radius;
+			}
+			public int getRadius() {
+				return radius;
+			}
+			@Override
+			public Prototype clone() {
+				return new Circle(this.radius); // Cloning logic (deep copy)
+			}
+			@Override
+			public String toString() {
+				return "Circle [radius=" + radius + "]";
+			}
+		}
+		public class Rectangle implements Prototype {
+			private int length;
+			private int width;
+			public Rectangle(int length, int width) {
+				this.length = length;
+				this.width = width;
+			}
+			public void setLength(int length) {
+				this.length = length;
+			}
+			public void setWidth(int width) {
+				this.width = width;
+			}
+			public int getLength() {
+				return length;
+			}
+			public int getWidth() {
+				return width;
+			}
+			@Override
+			public Prototype clone() {
+				return new Rectangle(this.length, this.width); // Cloning logic (deep copy)
+			}
+			@Override
+			public String toString() {
+				return "Rectangle [length=" + length + ", width=" + width + "]";
+			}
+		}
+	Step 3: Client Code Using the Prototype Pattern
+		public class Main {
+			public static void main(String[] args) {
+				// Original Circle
+				Circle originalCircle = new Circle(10);
+				System.out.println("Original Circle: " + originalCircle);
+
+				// Cloned Circle
+				Circle clonedCircle = (Circle) originalCircle.clone();
+				clonedCircle.setRadius(20); // Modify cloned object
+				System.out.println("Cloned Circle: " + clonedCircle);
+
+				// Original Rectangle
+				Rectangle originalRectangle = new Rectangle(5, 10);
+				System.out.println("Original Rectangle: " + originalRectangle);
+
+				// Cloned Rectangle
+				Rectangle clonedRectangle = (Rectangle) originalRectangle.clone();
+				clonedRectangle.setWidth(15); // Modify cloned object
+				System.out.println("Cloned Rectangle: " + clonedRectangle);
+			}
+		}
+
+Advantages of Prototype Design Pattern:
+	1) Efficient Object Creation: Avoids costly operations for creating objects from scratch.
+	2) Flexibility: Easily create modified versions of objects without altering their classes.
+	3) Simplifies Object Hierarchies: Works well when object hierarchies are complex and involve many variations.
+	
+Disadvantages:
+	1) Complex Cloning: Deep cloning can become complicated if the object has nested references.
+	2) Memory Usage: Cloning large objects might require significant memory.
+	
+Real-World Use Cases:
+	1) Game Development: Cloning game characters or objects with minor variations.
+	2) Document Editing: Create copies of templates with changes.
+	3) Caching: Pre-create objects and clone them as needed.
+	
+============================================================================================================================================================================
