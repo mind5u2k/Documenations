@@ -1,4 +1,5 @@
-4. Optional Enhancements
+Optional Enhancements
+---------------------
 	Java's Optional was introduced in Java 8 to help developers avoid null checks and reduce the risk of running into NullPointerExceptions. With Java 11, the API received a neat little enhancement that improves its expressiveness and readability: the addition of the isEmpty() method. Although several useful methods such as ifPresentOrElse() and stream() were introduced in Java 9 to complement Optional, the single addition in Java 11—isEmpty()—is especially helpful in clarifying code logic.
 	
 	The isEmpty() Method

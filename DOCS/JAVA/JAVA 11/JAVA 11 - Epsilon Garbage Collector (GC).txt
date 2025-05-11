@@ -1,3 +1,71 @@
-8. Epsilon Garbage Collector (GC)
-	Epsilon GC is a no-op garbage collector that disables automatic memory management.
-	Useful for performance testing where GC overhead needs to be eliminated. 
+Epsilon Garbage Collector (GC)
+------------------------------
+	* Introduced in Java 11 (via JEP 318), the Epsilon GC is an experimental, no-op garbage collector. Unlike conventional garbage collectors that periodically identify and reclaim memory occupied by unreachable objects, Epsilon GC does nothing. It simply allocates memory as requested until the heap is exhausted. When the heap limit is reached, your program will throw an OutOfMemoryError immediately. This design offers minimal overhead during allocation, making it ideal for performance experiments where you want to measure your application’s behavior in the absence of GC pauses.
+	
+	How It Works
+	* No Collection Cycle: Epsilon GC does not trace or recycle objects. Every allocation is permanent for the life of the application.
+	* Minimal Interference: By not performing any background or stop-the-world collection cycles, Epsilon minimizes the runtime overhead, which is useful when you want to benchmark raw allocation performance without the unpredictable delays of garbage collection.
+	* Predictable Resource Exhaustion: Since garbage collection is entirely disabled, memory usage increases monotonically. This means that if your application dynamically allocates memory, it will eventually run out of heap space and throw an OutOfMemoryError.
+	
+	These characteristics make Epsilon GC particularly appealing in controlled environments, such as:
+	
+	* Performance Benchmarking: Understanding the costs of memory allocation without GC interference.
+	* Experimental Testing: Simulating scenarios where you deliberately want to observe how your application handles a sudden memory shortage.
+	* Short-Lived Processes: In applications that run for a very brief period, where the overhead of even a minimal GC cycle is unnecessary.
+	
+	Example: Memory Allocation Under Epsilon GC
+		
+		Let’s illustrate Epsilon GC with a simple Java program that continuously allocates memory until it exhausts the heap. Save the following code as TestEpsilonGC.java:
+		
+			import java.util.ArrayList;
+			import java.util.List;
+
+			public class TestEpsilonGC {
+				public static void main(String[] args) {
+					// List to keep references so that allocated objects are not eligible for GC
+					List<byte[]> allocations = new ArrayList<>();
+					int iteration = 0;
+					try {
+						while (true) {
+							// Allocate 1 MB blocks continuously
+							allocations.add(new byte[1024 * 1024]);
+							iteration++;
+							System.out.println("Iteration " + iteration + " - Allocated 1MB block.");
+						}
+					} catch (OutOfMemoryError e) {
+						System.err.println("OutOfMemoryError caught! Total iterations: " + iteration);
+						e.printStackTrace();
+					}
+				}
+			}
+		
+		Explanation of the Code
+			* Allocation in a Loop: The program continuously creates a 1 MB byte array inside an infinite loop.
+			* Storing References: Each new byte array is added to an ArrayList to prevent the object from being garbage collected (even though with Epsilon GC, collection is disabled anyway).
+			* Error Handling: Once the Java heap is filled up, the program catches the OutOfMemoryError and prints out the number of iterations completed.
+			
+	Running the Example with Epsilon GC
+	
+		1) Compile the Program:
+				javac TestEpsilonGC.java
+				
+		2) Run with Epsilon GC Enabled:
+			Use the following JVM flags to unlock experimental options and enable the Epsilon GC. For demonstration, you can restrict the heap size using -Xmx (for example, to 100 MB):
+				java -XX:+UnlockExperimentalVMOptions -XX:+UseEpsilonGC -Xmx100m TestEpsilonGC
+			
+			With these commands:
+				* -XX:+UnlockExperimentalVMOptions allows the usage of experimental features.
+				* -XX:+UseEpsilonGC selects the Epsilon garbage collector.
+				* -Xmx100m limits the heap size to 100 MB to ensure that the program quickly encounters an OutOfMemoryError.
+				
+			As the program runs, you will see messages indicating each iteration of allocating 1 MB blocks. Once the total allocated memory exceeds 100 MB, the JVM will throw an OutOfMemoryError, and the error handling code will print an appropriate message.
+			
+			
+	Considerations
+		While Epsilon GC can be exceptionally useful in controlled benchmarks or certain specialized scenarios, consider the following before using it in production:
+		* No Memory Reclamation: Once you allocate memory, it is never reclaimed regardless of object liveness. In typical long-running applications with dynamic memory profiles, this will lead to resource exhaustion.
+		* Niche Use Cases: It is best suited for short-running processes or environments where you have strict control over the memory footprint.
+		
+		For developers interested in performance tuning or simulating memory pressure, Epsilon GC can offer valuable insights into raw allocation behaviors. It also serves as an excellent educational tool for understanding the inherent costs associated with garbage collection in managed runtime environments.
+		
+===================================================================================================================================================================================

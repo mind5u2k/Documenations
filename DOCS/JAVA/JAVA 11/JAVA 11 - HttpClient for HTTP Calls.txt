@@ -1,2 +1,131 @@
-5. HttpClient for HTTP Calls
-	Java 11 introduced the new java.net.http.HttpClient API: 
+HttpClient for HTTP Calls
+-------------------------	
+	Java 11 introduced a modern, feature-rich HTTP client API in the java.net.http package. This replaces the older, cumbersome HttpURLConnection API, making it much easier to perform HTTP calls. The new API supports both synchronous and asynchronous operations, HTTP/2, streamlined configuration options, and a fluent API for building requests and processing responses.
+	
+	Key Features of Java 11 HttpClient
+		* Synchronous and Asynchronous Calls: You can perform blocking calls using send() or non-blocking calls with sendAsync(), which returns a CompletableFuture for handling responses asynchronously.
+		* HTTP/2 Support: The client supports HTTP/2 out-of-the-box. You can specify the HTTP version when building the client. If the target server does not support HTTP/2, it gracefully falls back to HTTP/1.1.
+		* Simplified API: Through a fluent builder pattern, you can easily configure various options like timeouts, headers, and proxies.
+		* Built-in Body Handlers: The API provides convenient body handlers such as HttpResponse.BodyHandlers.ofString(), which converts the response body directly into a String, or you can create custom handlers if needed.
+		* No External Dependencies: Since it's part of the standard JDK (from Java 11 onward), there’s no need to add any external libraries for basic HTTP operations.
+		
+	Configuring the HttpClient
+		You can create an HttpClient instance using the builder provided by the API. Here’s how you can configure a custom client:
+		
+			import java.net.http.HttpClient;
+			import java.time.Duration;
+
+			HttpClient client = HttpClient.newBuilder()
+				.version(HttpClient.Version.HTTP_2)          // Prefer HTTP/2
+				.connectTimeout(Duration.ofSeconds(10))      // Set a connection timeout
+				// Other options can include proxy, authenticator, cookie handler, etc.
+				.build();
+		
+		In this example, the client is configured to use HTTP/2 if available, and it sets a connection timeout of 10 seconds. You can further customize the client if your application requires redirect policies, proxy settings, or authentication.
+		
+	Synchronous HTTP Call Example
+		Below is a complete example that demonstrates how to perform a synchronous HTTP GET request. In this case, we will call a public API at https://httpbin.org/get:
+		
+			import java.net.http.HttpClient;
+			import java.time.Duration;
+
+			HttpClient client = HttpClient.newBuilder()
+				.version(HttpClient.Version.HTTP_2)          // Prefer HTTP/2
+				.connectTimeout(Duration.ofSeconds(10))      // Set a connection timeout
+				// Other options can include proxy, authenticator, cookie handler, etc.
+				.build();
+		
+		In this example, the client is configured to use HTTP/2 if available, and it sets a connection timeout of 10 seconds. You can further customize the client if your application requires redirect policies, proxy settings, or authentication.
+		
+
+	Synchronous HTTP Call Example
+		Below is a complete example that demonstrates how to perform a synchronous HTTP GET request. In this case, we will call a public API at https://httpbin.org/get:
+		
+			import java.net.URI;
+			import java.net.http.HttpClient;
+			import java.net.http.HttpHeaders;
+			import java.net.http.HttpRequest;
+			import java.net.http.HttpResponse;
+			import java.time.Duration;
+
+			public class HttpClientSynchronousExample {
+				public static void main(String[] args) {
+					// Create an HttpClient instance with default settings
+					HttpClient client = HttpClient.newHttpClient();
+
+					// Build the HTTP GET request
+					HttpRequest request = HttpRequest.newBuilder()
+						.uri(URI.create("https://httpbin.org/get"))
+						.timeout(Duration.ofSeconds(10))
+						.header("User-Agent", "Java 11 HttpClient Bot")
+						.GET() // Optional, as GET is the default
+						.build();
+
+					try {
+						// Send the request synchronously and receive a response
+						HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+						// Print the response status code, headers, and body
+						System.out.println("Status Code: " + response.statusCode());
+						HttpHeaders headers = response.headers();
+						headers.map().forEach((key, values) -> System.out.println(key + ": " + values));
+						System.out.println("Body: " + response.body());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
+		Explanation:
+			* Building the Request: We construct an HttpRequest with a specific URI, a timeout, and a custom User-Agent header.
+			* Sending the Request: The client.send() method performs a synchronous call; your program waits until the server responds.
+			* Processing the Response: We print out the status code, headers, and the response body, all provided by the HttpResponse object.
+			
+	Asynchronous HTTP Call Example
+		* For non-blocking operations, Java 11 offers the sendAsync() method. It returns a CompletableFuture that you can use to chain further processing without blocking the main thread. Here’s an example:
+		
+				import java.net.URI;
+				import java.net.http.HttpClient;
+				import java.net.http.HttpRequest;
+				import java.net.http.HttpResponse;
+				import java.time.Duration;
+				import java.util.concurrent.CompletableFuture;
+
+				public class HttpClientAsyncExample {
+					public static void main(String[] args) {
+						// Create an HttpClient with HTTP/2 and a 10-second connect timeout
+						HttpClient client = HttpClient.newBuilder()
+							.version(HttpClient.Version.HTTP_2)
+							.connectTimeout(Duration.ofSeconds(10))
+							.build();
+
+						// Build the HTTP GET request
+						HttpRequest request = HttpRequest.newBuilder()
+							.uri(URI.create("https://httpbin.org/get"))
+							.header("User-Agent", "Java 11 HttpClient Bot")
+							.build();
+
+						// Send the request asynchronously
+						CompletableFuture<HttpResponse<String>> futureResponse = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+
+						// Process the response once it's available
+						futureResponse.thenAccept(response -> {
+							System.out.println("Status Code: " + response.statusCode());
+							response.headers().map().forEach((key, values) -> System.out.println(key + ": " + values));
+							System.out.println("Body: " + response.body());
+						})
+						// Wait for the asynchronous operation to complete
+						.join();  
+					}
+				}
+
+		Explanation:
+			* Non-Blocking Execution: The sendAsync() method immediately returns a CompletableFuture. This way, your application can perform other tasks while waiting for the response.
+			* Chained Processing: Using thenAccept(), we provide a lambda that processes the response once it arrives. Finally, calling .join() ensures the main thread waits for the completion of the asynchronous operation.
+			
+	Further Considerations
+		* Error Handling: In both synchronous and asynchronous examples, proper error handling is crucial. In the asynchronous case, you can also attach exception handling with methods like .exceptionally().
+		* Custom HTTP Methods: While GET is the most common, you can also build POST, PUT, DELETE, or any custom HTTP method by using the appropriate methods (e.g., .POST(HttpRequest.BodyPublishers.ofString(payload))).
+		* Advanced Configurations: The HttpClient builder lets you set up proxy configurations, define a custom executor for asynchronous tasks, and configure cookies—all of which are very useful for advanced scenarios.
+		
+		Using Java 11’s HttpClient API can simplify making HTTP calls significantly, whether you need quick synchronous interactions or deep asynchronous flows. These features are particularly handy in modern Java applications where scalability and responsiveness are essential.

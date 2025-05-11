@@ -1,4 +1,5 @@
-3. New Files Methods
+New Files Methods
+-----------------
 	Java 11 introduced two very handy methods in the java.nio.file.Files class—readString and writeString—that make working with text files much simpler and more expressive compared to the older approaches. These methods help you avoid boilerplate code associated with streams or manual charset handling for many common file I/O operations. Let’s dive into each of these methods in detail along with code examples.
 	
 	1. Files.readString(Path path) : 

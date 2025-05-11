@@ -1,4 +1,5 @@
-1. New String Methods
+New String Methods
+------------------
 	Java 11 added several helper methods to the String class:
 	1. isBlank()
 		* What it does: The isBlank() method tests whether a string is empty or contains only Unicode whitespace. This is a more modern replacement for checking if a string is empty after trimming whitespace. Unlike the older isEmpty() method (which only returns true if the string’s length is zero), isBlank() returns true even if the string has whitespace characters like spaces, tabs, or non-breaking spaces.

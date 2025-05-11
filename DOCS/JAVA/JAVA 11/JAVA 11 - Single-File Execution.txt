@@ -1,2 +1,66 @@
 7. Single-File Execution
-	You can run single-file programs without compiling them separately: 
+	Single-file execution is a feature introduced in Java 11 (described in JEP 330) that lets you run a Java program directly from its source file without the need for a separate compilation step. Traditionally, you first use javac to compile your source file into bytecode and then run it with the java command. With single-file execution, however, you can simply pass the .java file to the Java launcher, which will compile (in memory) and execute it right away.
+	
+	How It Works
+		When you supply a source file (one that ends with a .java extension) as the first argument to the Java launcher, the launcher understands that it must:
+			1) Compile the Source: It compiles the file on the fly, in memory, without generating a persistent .class file—unless there’s a compilation error.
+			2) Run the Program: It locates the first public class containing the standard public static void main(String[] args) method and executes it.
+		Because the compilation happens behind the scenes, this makes running small or one-off programs fast and convenient. It is especially useful for quick testing, prototyping, or when learning Java.
+		
+	Key Benefits
+		* No Explicit Compilation Step: You don't need to run javac manually. Simply running java FileName.java handles both the compilation and execution.
+		* Speed & Simplicity: This feature is perfect for small scripts or demo programs, which normally would only consist of a single file.
+		* Flexibility in File Naming: While it’s recommended to follow standard class and file name conventions (i.e., the public class name should match the file name), the launcher is a bit more permissive when running source files directly. However, inconsistencies might prevent you from using the traditional javac separately.
+		
+	Example 1: "Hello, Java 11!"
+		Create a file named HelloWorld.java with the following content:
+
+			public class HelloWorld {
+				public static void main(String[] args) {
+					System.out.println("Hello, Java 11!");
+				}
+			}
+		
+		To run this program using single-file execution, simply execute the command without an explicit compilation step:
+		
+			java HelloWorld.java
+	
+		When you run this command, the launcher compiles HelloWorld.java in memory and executes it, printing:
+		
+			Hello, Java 11!
+
+		This process avoids generating a separate HelloWorld.class file unless the bytecode is needed later, making it ideal for one-off scripts or quick demos.
+		
+	Example 2: A More Functional Program
+		Suppose you want a program that prints the current date and time and accepts command-line arguments. Create a file called TimePrinter.java:
+	
+			import java.time.LocalDateTime;
+
+			public class TimePrinter {
+				public static void main(String[] args) {
+					if (args.length > 0) {
+						System.out.println("Extra information: " + String.join(" ", args));
+					} else {
+						System.out.println("No extra information provided.");
+					}
+					System.out.println("Current Date and Time: " + LocalDateTime.now());
+				}
+			}
+		
+		Run the program with arguments as follows:
+		
+				java TimePrinter.java "Running in single-file mode"
+			
+			This will:	
+				* Compile the file in memory.
+				* Run the main method.
+				* Print both the provided argument and the current date and time.
+			This example demonstrates that even slightly more advanced programs can be executed directly as a single source file, making it very handy during development or for scripting tasks.
+			
+	Additional Considerations
+		* Compilation Errors: Any compilation errors will be reported as they would be with javac, so correctness is enforced at runtime.
+		* Multiple Classes: If multiple classes are defined in the file, the launcher runs the one that appears first with a main method. It is still best practice to keep your source files clean and named appropriately.
+		* Scripting with Shebang: You can even combine single-file execution with a Unix shebang (#!) line at the top of your file. This permits treating Java files like shell scripts for quick automation tasks.
+		
+	Final Thoughts
+		Single-file execution in Java 11 simplifies how you develop, test, and prototype small Java programs. It brings Java closer to scripting languages in terms of ease of use, while still leveraging the full power of the Java runtime. Whether you’re a beginner experimenting with Java or a professional looking to bypass boilerplate when writing utility scripts, this feature can significantly streamline your workflow.
