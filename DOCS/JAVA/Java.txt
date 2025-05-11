@@ -1,0 +1,58 @@
+Java SE 8 (2014):** Major release with lambda expressions, streams API, default methods in interfaces, functional interfaces, and Date/Time API.
+
+Java SE 9 (2017):** Modular system (Project Jigsaw), JShell REPL, multi-release JARs, HTTP/2 client, and G1 as default GC.
+
+Java SE 10 (2018):** Local variable type inference (var), garbage collector interface, application class-data sharing, and experimental Java-based JIT compiler.
+
+Java SE 11 (2018):
+
+1. New HTTP (and WebSocket) Client
+2. Nested classes attributes’ visibility management
+3. Epsilon: A No-Op Garbage Collector 
+4. New Characters, Scripts, and Blocks
+5. Java Flight Recorder
+6. APis Improvements
+7. Deprecations and Deletions
+8. Other Enhancements 
+9. Long-Term Support (LTS)
+
+Key Features of Java 11:
+------------------------ 
+1. New String Methods
+	Java 11 added several helper methods to the String class:
+2. var in Lambda Expressions
+	You can now use var inside lambda parameters:
+3. New Files Methods
+	Java 11 introduced new convenience methods in java.nio.file.Files:
+4. Optional Enhancements
+	Java 11 improved Optional with new methods:
+5. HttpClient for HTTP Calls
+	Java 11 introduced the new java.net.http.HttpClient API:
+6. Remove java.xml.ws, java.activation
+	Java 11 removed older Java EE modules like JAX-WS, JAXB, and CORBA.
+	These modules are now available as external dependencies.
+7. Single-File Execution
+	You can run single-file programs without compiling them separately:
+8. Epsilon Garbage Collector (GC)
+	Epsilon GC is a no-op garbage collector that disables automatic memory management.
+	Useful for performance testing where GC overhead needs to be eliminated.
+9. Flight Recorder and Mission Control
+	Java 11 includes Java Flight Recorder (JFR) for performance monitoring.
+	Java Mission Control (JMC) helps analyze application behavior.
+	
+---------------------------------------------------------------------------------------------------------------------------------------
+Key Features of Java 17:
+------------------------ 
+1) Sealed Classes: 
+	These restrict the number of classes or interfaces that can extend or implement them, offering greater control over inheritance hierarchies. 
+2) Pattern Matching for Switch:
+	This feature enhances the switch statement by allowing for more expressive and concise handling of different patterns. 
+3) Foreign Function and Memory API:
+	This API, an incubator feature, enables Java developers to interact with native code and manage memory outside the Java Virtual Machine (JVM). 
+4) Enhanced Pseudo-Random Number Generators:
+	Java 17 introduces new interfaces and implementations for pseudo-random number generators, including jumpable and splittable PRNGs. 
+5) New macOS Rendering Pipeline:
+	This new pipeline, based on Apple Metal API, improves the performance and integration of Java applications on macOS. 
+6) Deprecation of the Applet API:
+	The Applet API is deprecated in Java 17, encouraging developers to move towards more modern web development techniques. 
+

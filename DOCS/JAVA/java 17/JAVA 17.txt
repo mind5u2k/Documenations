@@ -1,0 +1,88 @@
+Java 17 introduced several important features including:
+
+1) Sealed Classes- Restricts which classes can inherit from a sealed class
+	Java Sealed Classes were introduced to give developers finer control over class hierarchies by explicitly controlling which classes can extend or implement a given class or interface. This feature, which began as a preview in Java 15 and was finalized in Java 17, locks down the inheritance of a class so that only a predetermined set of subclasses can exist. This not only enhances maintainability but also enables the compiler to provide useful guarantees—for instance, during pattern matching (like in switch expressions), it can verify that all possible cases are covered.
+	
+	How Sealed Classes Work ;
+		When you declare a class or interface as sealed, you use the permits clause to list all classes that are allowed to extend or implement it. Each permitted subclass must explicitly state its own relationship with the base class:
+
+		* Final Subclasses: Marking a permitted subclass as final prevents any further subclassing. This is useful when you’re confident that the subclass's implementation should never change.
+		* Sealed Subclasses: A subclass can itself be sealed, meaning it too restricts its own subclasses using a permits clause.
+		* Non-Sealed Subclasses: Declaring a permitted subclass as non-sealed effectively “opens” it up for further extension beyond the original sealed hierarchy.
+		
+		This control helps in scenarios where you want to enforce a fixed set of behaviors, making your API more robust and safer against unintended extensions.
+
+	A Code Example
+		Below is an example of a sealed class hierarchy representing various types of shapes. The base class Shape is sealed, and it explicitly permits only Circle, Rectangle, and Square as its subclasses.
+					
+			// Base sealed class
+			public sealed class Shape permits Circle, Rectangle, Square {
+				// Common properties or methods for all shapes can be defined here.
+			}
+			// Final subclass: No further extension allowed.
+			public final class Circle extends Shape {
+				private final double radius;				
+				public Circle(double radius) {
+					this.radius = radius;
+				}				
+				public double getRadius() {
+					return radius;
+				}
+				@Override
+				public String toString() {
+					return "Circle with radius " + radius;
+				}
+			}
+			// Non-sealed subclass: Other classes can extend Rectangle.
+			public non-sealed class Rectangle extends Shape {
+				private final double length;
+				private final double width;				
+				public Rectangle(double length, double width) {
+					this.length = length;
+					this.width = width;
+				}				
+				public double getArea() {
+					return length * width;
+				}				
+				@Override
+				public String toString() {
+					return "Rectangle with length " + length + " and width " + width;
+				}
+			}
+			// Final subclass: No further extension allowed.
+			public final class Square extends Shape {
+				private final double side;				
+				public Square(double side) {
+					this.side = side;
+				}
+				public double getArea() {
+					return side * side;
+				}				
+				@Override
+				public String toString() {
+					return "Square with side " + side;
+				}
+			}
+		
+		What’s Happening in the Code
+			1)The Sealed Base Class (Shape): The Shape class is declared as sealed, which means only the classes listed in the permits clause (i.e., Circle, Rectangle, and Square) can extend it.
+			2) The Circle Class: It is declared as final, meaning it is a terminal leaf in the hierarchy. No other class can extend Circle.
+			3) The Rectangle Class: It is declared as non-sealed, which opens up the possibility for further subclassing if needed. This allows for greater flexibility down that branch of the hierarchy.
+			4) The Square Class: Similar to Circle, it is marked as final, so its behavior is set in stone.
+
+	Benefits and Use Cases
+		* Safety and Control: With sealed classes, you know exactly which subclasses can exist. This can prevent unexpected behavior if someone tries to extend your class in unforeseen ways.
+		* Exhaustive Pattern Matching: When using switch expressions, the compiler can warn you if you forgot to handle one of the permitted cases.
+		* API Design: Sealed classes help you design a clear and well-defined API where the inheritance hierarchy is controlled and predictable.
+
+	Further Considerations
+		Sealed classes are particularly useful in frameworks and libraries where you want to offer a controlled set of extension points. They also work well with other modern Java features like records, which are often used to create immutable data carriers. As you explore further, you might also want to see how sealed classes integrate with exception handling hierarchies or even how they play alongside design patterns like the visitor pattern for more robust application architectures.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+2) Pattern Matching for switch: Allows more expressive and concise switch statements and reduces boilerplate code in type-checking scenarios
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+3) Records: Provides a compact syntax for creating immutable data classes
+4) Text Blocks: Allows multi-line string literals without escape characters - Improved Random Number Generators: Provides a new interface and implementations for random number generation

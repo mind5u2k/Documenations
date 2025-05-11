@@ -1,0 +1,92 @@
+3. New Files Methods
+	Java 11 introduced two very handy methods in the java.nio.file.Files class—readString and writeString—that make working with text files much simpler and more expressive compared to the older approaches. These methods help you avoid boilerplate code associated with streams or manual charset handling for many common file I/O operations. Let’s dive into each of these methods in detail along with code examples.
+	
+	1. Files.readString(Path path) : 
+		This method reads all characters from the given file into a single String. It is especially useful when you need to load small or moderate-sized files entirely into memory. There are two variants:
+		* readString(Path path): Uses the platform’s default charset.
+		* readString(Path path, Charset cs): Uses the specified charset.
+
+		Key Points:
+			* Simplicity: Prior to Java 11, you might have used a combination of Files.readAllBytes(Path) and converting the byte array to a string or used a stream-based approach with Files.lines(Path). Now, you can do it in one clean line.
+			* Use Case: Best suited for text files where the entire file content is needed as one String (e.g., configuration files, templates, etc.).
+			* Exception Handling: As usual with file I/O, you must be ready to handle IOException in case the file isn’t found or there is an access issue.
+		
+		Example:
+				import java.io.IOException;
+				import java.nio.file.Files;
+				import java.nio.file.Path;
+				import java.nio.charset.StandardCharsets;
+
+				public class ReadFileExample {
+					public static void main(String[] args) {
+						// Define the path to the file.
+						Path filePath = Path.of("example.txt");
+						
+						try {
+							// Using the default charset
+							String content = Files.readString(filePath);
+							System.out.println("File contents (default charset):");
+							System.out.println(content);
+							
+							// Alternatively, specifying a charset explicitly (e.g., UTF-8)
+							String contentUtf8 = Files.readString(filePath, StandardCharsets.UTF_8);
+							System.out.println("File contents (UTF-8):");
+							System.out.println(contentUtf8);
+						} catch (IOException e) {
+							// Handle exceptions such as file not found or read errors.
+							e.printStackTrace();
+						}
+					}
+				}
+		
+			In this example, the file example.txt is read, and its content is printed out. Notice how concise the method is—there is no need for additional conversions from a byte array or the management of stream resources.
+		
+	2. Files.writeString(Path path, CharSequence csq, OpenOption... options)
+		Alongside readString, Java 11 also introduced writeString, streamlining the process of writing text data to files. It comes in two forms:
+		* writeString(Path path, CharSequence csq, OpenOption... options): Writes the given character sequence to the file using the default charset.
+		* writeString(Path path, CharSequence csq, Charset cs, OpenOption... options): Allows the specification of a charset for writing.
+		
+		Key Points:
+			* Conciseness: You can write text data directly to a file without resorting to creating output streams or manually converting strings to bytes.
+			* Options Flexibility: The method accepts varargs of OpenOption (like StandardOpenOption.CREATE, StandardOpenOption.WRITE, or StandardOpenOption.APPEND), which gives you control over how the file is written or updated.
+			* Use Case: Ideal for writing configuration data, logs (when not using logging frameworks), or any situation when you want to write text to a file with minimal hassle.
+		
+		Example:
+				import java.io.IOException;
+				import java.nio.file.Files;
+				import java.nio.file.Path;
+				import java.nio.file.StandardOpenOption;
+				import java.nio.charset.StandardCharsets;
+
+				public class WriteFileExample {
+					public static void main(String[] args) {
+						// Define the path to the output file.
+						Path filePath = Path.of("output.txt");
+						// The text content to write to the file.
+						String textToWrite = "Hello, Java 11! This text is written using Files.writeString.";
+						
+						try {
+							// Writing using the default charset
+							Files.writeString(filePath, textToWrite, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+							
+							// Alternatively, writing with explicit UTF-8 charset
+							Files.writeString(filePath, textToWrite, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+							
+							System.out.println("The file has been successfully written.");
+						} catch (IOException e) {
+							// Handle exceptions like write failures or access permissions issues.
+							e.printStackTrace();
+						}
+					}
+				}
+	
+			In this snippet, Files.writeString is used to write a String into a file called output.txt. The use of StandardOpenOption.CREATE ensures that if the file doesn’t already exist, it will be created. Should you wish to append instead of overwriting, you can replace StandardOpenOption.WRITE with StandardOpenOption.APPEND.
+		
+	Advantages of Using These Methods
+		* Readability: Cleaner and more readable code compared to using streams or manual byte conversion.
+		* Efficiency: Less code leads to fewer potential mistakes and maintenance overhead for common file I/O tasks.
+		* Conciseness: Ideal for small files where the overhead of reading the file fully into memory is acceptable.
+		These methods are excellent for many everyday tasks; however, if you are dealing with very large files or need more controlled streaming, you might still prefer more low-level APIs.
+		
+	Both readString and writeString are part of Java 11’s ongoing improvements that make the language more modern and the codebase more expressive. They don't just simplify file I/O—they strategically allow developers to focus on business logic rather than boilerplate code. For further exploration, you might consider combining these methods with Java’s new file manipulation capabilities (e.g., the Power of java.nio.file.Path and additional file attribute support), thereby streamlining complex file operations while keeping your code elegant and maintainable.
+====================================================================================================================================================================================

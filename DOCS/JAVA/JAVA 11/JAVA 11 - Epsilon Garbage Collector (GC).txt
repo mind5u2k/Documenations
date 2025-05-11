@@ -1,0 +1,3 @@
+8. Epsilon Garbage Collector (GC)
+	Epsilon GC is a no-op garbage collector that disables automatic memory management.
+	Useful for performance testing where GC overhead needs to be eliminated. 

@@ -1,0 +1,62 @@
+var in Lambda Expressions
+	* In Java, lambda expressions allow you to write concise code for implementing functional interfaces. Typically, the compiler infers the types of lambda parameters based on the target interface. However, there are situations—especially when you need to add annotations or modifiers to parameters—when you’d like to explicitly declare the parameter types. Starting with Java 11, you can use the var keyword in lambda parameters, enabling you to leverage type inference while still having the option to annotate or modify the parameters.
+	
+	What Does Using var in a Lambda Expression Mean?
+		* Type Inference with Explicit Declaration: When you normally write a lambda expression, such as:
+			names.forEach(name -> System.out.println(name));
+		
+			the compiler automatically infers the type of name from the context (in this case, String if names is a List<String>). When using var, like this:
+			
+			names.forEach((var name) -> System.out.println(name));
+
+			you’re still allowing type inference, but now you’re explicitly telling the compiler that you want to declare the parameter using local variable type inference syntax. This might seem redundant at first, but it has its benefits, as you will see below.
+		
+		* Consistency & Use of Annotations: One key reason to use var in lambda parameters is when you need to add annotations. For example, suppose you want to indicate that the lambda parameter should not be null or needs to be processed in a certain way. You can do this by annotating the parameter. However, Java requires that if you use annotations or modifiers on one parameter of a lambda, then you must explicitly declare the types (or use var) for all parameters in the lambda. The var keyword provides a uniform way for doing this without resorting to verbose type declarations. For example:
+			names.forEach((@Nonnull var name) -> System.out.println(name.toUpperCase()));
+
+			Here, @Nonnull is applied to the parameter, and using var makes it clear and consistent.
+			
+		* Restrictions: If you decide to use var in a lambda expression, it must be applied to every parameter. For instance, when comparing two strings with a lambda that takes two arguments, both parameters must be declared with var if you choose that approach:
+			Comparator<String> comparator = (var s1, var s2) -> s1.compareTo(s2);
+	
+			You cannot mix an implicitly typed parameter with one declared using var.
+			
+	An Example in Action	
+		Let’s look at a complete example to illustrate these points:		
+				import java.util.Arrays;
+				import java.util.Comparator;
+				import java.util.List;
+				import javax.annotation.Nonnull; // Assume you've got this annotation available
+
+				public class VarLambdaExample {
+					public static void main(String[] args) {
+						// A list of names
+						List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+						
+						// Lambda without specifying the type explicitly:
+						names.forEach(name -> System.out.println(name));
+						
+						// Lambda using var: The compiler still infers that 'name' is of type String.
+						names.forEach((var name) -> System.out.println(name.toUpperCase()));
+						
+						// Using var with annotations in multiple parameters:
+						Comparator<String> comparator = ( @Nonnull var s1, @Nonnull var s2 ) -> s1.compareTo(s2);
+						System.out.println("Comparison result: " + comparator.compare("apple", "banana"));
+					}
+				}
+			
+			Explanation of the Example:
+				1) Basic Lambda (Without var): The first lambda expression is the conventional style where the type of name is inferred from the context of the forEach method. This is concise and perfectly acceptable when no additional annotations or modifiers are needed.
+				2) Lambda with var: In the second lambda, we explicitly declare the parameter using var. This approach doesn’t change the inferred type (it’s still a String), but it allows you to later add annotations or even modify the parameter behavior if necessary.
+				3) Lambda with Annotations and var: For the comparator, we want to enforce non-null parameters using an annotation (e.g., @Nonnull). Since the annotation cannot be attached to a parameter without its type being explicitly declared, we use var for both parameters (s1 and s2). Even though it might seem like extra verbosity compared to type inference, it provides clarity and flexibility when annotations are important.
+				
+		When Should You Use var in Lambda Expressions?
+			* Adding Annotations: If you need to add annotations (like @Nonnull, @Deprecated, or custom annotations) to lambda parameters, you have to explicitly declare them. Using var is a succinct way to do so.
+			* Uniformity in Code: In teams or projects where explicit parameter declaration is preferred for clarity or consistency, adopting var can make the style uniform without writing out full type names that are already obvious from context.
+			* Enhancing Readability in Complex Lambdas: In more complex lambda expressions where you might later want to specify modifiers (such as final) or annotations, starting with var makes future modifications easier and reduces the chance of errors.
+			
+		Moving Forward
+			* Using var in lambda expressions is a small but powerful feature—it doesn't change how the compiler infers types but gives you more control over your code annotations and modifiers. Keep in mind that this feature is best used when you have additional reasons (like annotations) to declare parameters explicitly. For many simple cases, the concise style without var remains perfectly readable.
+			* Other related areas you might find interesting include exploring how local variable type inference (var) works in other contexts or how lambda expressions improve functional programming in Java, especially when combined with the Stream API. There's a rich landscape of modern Java features that can level up your code quality and expressiveness
+			
+=============================================================================================================================================================================

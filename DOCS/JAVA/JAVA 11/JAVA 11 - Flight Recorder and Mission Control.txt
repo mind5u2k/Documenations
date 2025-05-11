@@ -1,0 +1,3 @@
+9. Flight Recorder and Mission Control
+	Java 11 includes Java Flight Recorder (JFR) for performance monitoring.
+	Java Mission Control (JMC) helps analyze application behavior.

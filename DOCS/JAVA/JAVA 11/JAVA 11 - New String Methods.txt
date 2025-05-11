@@ -1,0 +1,79 @@
+1. New String Methods
+	Java 11 added several helper methods to the String class:
+	1. isBlank()
+		* What it does: The isBlank() method tests whether a string is empty or contains only Unicode whitespace. This is a more modern replacement for checking if a string is empty after trimming whitespace. Unlike the older isEmpty() method (which only returns true if the string’s length is zero), isBlank() returns true even if the string has whitespace characters like spaces, tabs, or non-breaking spaces.
+		
+		Example:
+			public class IsBlankExample {
+				public static void main(String[] args) {
+					String empty = "";
+					String whitespace = "   ";
+					String nonBlank = "Java 11";
+
+					System.out.println("empty.isBlank() = " + empty.isBlank());        // true
+					System.out.println("whitespace.isBlank() = " + whitespace.isBlank()); // true
+					System.out.println("nonBlank.isBlank() = " + nonBlank.isBlank());     // false
+				}
+			}
+
+		* Why it matters: This method simplifies the common pattern where you’d otherwise need to write str.trim().isEmpty(), and it handles Unicode whitespace correctly.
+		
+	2. lines()
+		* What it does: The lines() method returns a Stream<String> where each element is a line extracted from the original string. It uses a line-break regular expression that recognizes various line terminators (like \n, \r\n, etc.), making it very convenient for processing multi-line strings.
+		
+		Example:		
+			import java.util.stream.Stream;
+			public class LinesExample {
+				public static void main(String[] args) {
+					String multiLine = "Hello, Java 11!\nWelcome to string processing.\r\nEnjoy coding!";
+					
+					// Use lines() to process each line separately.
+					Stream<String> lineStream = multiLine.lines();
+					lineStream.forEach(line -> System.out.println("Line: " + line));
+				}
+			}
+			
+		* Why it matters: Using lines() makes it easy to work with multi-line text (such as reading file content or processing user input) without manually handling different newline characters.
+		
+	3. strip(), stripLeading(), and stripTrailing()
+		* What they do: These methods remove whitespace based on Unicode definitions, which provides more predictability and correctness, especially with internationalized applications.
+			- strip(): Removes both leading and trailing whitespace.
+			- stripLeading(): Removes only the leading whitespace.
+			- stripTrailing(): Removes only the trailing whitespace.
+		They improve upon the older trim() method, which only removes characters with codepoint values less than or equal to space (U+0020) and might not cover all Unicode whitespace characters.
+		
+		Example:
+			public class StripExample {
+				public static void main(String[] args) {
+					// Using Unicode whitespace (e.g., U+2005 is a four-per-em space).
+					String padded = "\u2005 Hello, Java 11! \u2005";
+					
+					String stripped = padded.strip();
+					String leadingStripped = padded.stripLeading();
+					String trailingStripped = padded.stripTrailing();
+
+					System.out.println("Original: [" + padded + "]");
+					System.out.println("strip(): [" + stripped + "]");
+					System.out.println("stripLeading(): [" + leadingStripped + "]");
+					System.out.println("stripTrailing(): [" + trailingStripped + "]");
+				}
+			}
+		
+		Why it matters: For applications that need to process text from various languages and sources, using these Unicode-aware methods ensures that whitespace is correctly handled regardless of the specific characters involved.
+
+	4. repeat(int count)
+		* What it does: The repeat(int count) method creates a new string by concatenating the original string a specified number of times. It provides a cleaner and more readable way to generate repeated sequences compared to manual loops or other workarounds.
+		
+		Example:
+			public class RepeatExample {
+				public static void main(String[] args) {
+					String base = "Java! ";
+					String repeated = base.repeat(3);
+					System.out.println("Repeated String: " + repeated);  
+					// Output: "Java! Java! Java! "
+				}
+			}
+		
+		Why it matters: This method is especially useful when you need to generate repeated patterns, padding, or test data quickly without cluttering your code with loops.
+		
+================================================================================================================================================================================
