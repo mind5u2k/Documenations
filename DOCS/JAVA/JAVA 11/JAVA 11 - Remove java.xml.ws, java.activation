@@ -1,0 +1,3 @@
+6. Remove java.xml.ws, java.activation
+	Java 11 removed older Java EE modules like JAX-WS, JAXB, and CORBA.
+	These modules are now available as external dependencies. 
